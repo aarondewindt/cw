@@ -1,2 +1,2 @@
 # cw
-Collection of python libraries I've written throughout the years.
+This is collection of python libraries I've written the past few years. 
