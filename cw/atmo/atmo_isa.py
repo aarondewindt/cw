@@ -1,5 +1,6 @@
 from cw.conversions import hgeo_to_hpot
 from math import sqrt, exp
+from typing import Tuple
 
 __author__ = ['Nikita Sirons']
 
@@ -8,7 +9,7 @@ __author__ = ['Nikita Sirons']
 
 def atmo_isa(h, T0=292.15, p0=108900, rho0=1.2985,
              layers=(-610, 11000, 20000, 32000, 47000, 51000, 71000, 84852, 400000),
-             lapse_rate=(-0.0065, 0, 0.001, 0.0028, 0, -0.0028, -0.002)):
+             lapse_rate=(-0.0065, 0, 0.001, 0.0028, 0, -0.0028, -0.002)) -> Tuple[float, float, float, float]:
     """
     Parameters
     ----------

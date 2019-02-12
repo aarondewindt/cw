@@ -26,8 +26,8 @@ class TestDirectoryWalk(unittest.TestCase):
             file_names.append(file_path.name)
 
         correct_file_names = [
-            'jas.qw', 'thrust.csv', 'blabla.json', 'bhisd.pyc', 'something.dtsml', '__init__.py',
-            'qwerty.csv', 'bksdj.txt']
+            'jas.qw', 'thrust.csv', 'blabla.json', 'something.dtsml', '__init__.py',
+            'qwerty.csv', 'bksdj.txt', '.gitignore']
 
         # Check whether the list is correct.
         self.assertCountEqual(file_names, correct_file_names)
@@ -59,7 +59,8 @@ class TestDirectoryWalk(unittest.TestCase):
             "something.dtsml",
             "__init__.py",
             "qwerty.csv",
-            "bksdj.txt"
+            "bksdj.txt",
+            ".gitignore"
         ]
 
         # Check whether the list is correct.

@@ -28,7 +28,10 @@ setup(
                       "psutil",
                       "pyproj",
                       "requests",
-                      "matplotlib"],
+                      "matplotlib",
+                      "xarray",
+                      "sympy",
+                      "control"],
     packages=find_packages('.', exclude=["test"]),
     package_data={
         "cw.aero_file": "*.yaml",

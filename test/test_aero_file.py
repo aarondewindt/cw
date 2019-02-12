@@ -11,7 +11,7 @@ from cw.aero_file import AeroFile
 from cw.aero_file.regular_grid_interpolation_coefficient_model import RegularGridInterpolationCoefficientModel
 from cw.aero_file.linear_nd_interpolation_coefficient_model import LinearNDInterpolationCoefficientModel
 from cw.flex_file import flex_load
-from cw.print_code import print_code
+from cw.special_print import print_code
 from test import test_path
 
 

@@ -3,7 +3,7 @@ from cw.aero_file import aero_models_registry
 from cw.aero_file.coefficient_model_base import CoefficientModelBase
 from cw.aero_file import RegularGridInterpolationCoefficientModel
 from cw.flex_file import flex_load, flex_dump
-from cw.print_code import print_code
+from cw.special_print import print_code
 from cw.serializers import msgpack, yaml
 
 import os

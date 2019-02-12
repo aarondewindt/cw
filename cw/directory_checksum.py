@@ -1,7 +1,7 @@
 from pathlib import Path, PurePosixPath
 import fnmatch
 import hashlib
-from cw import directory_walk
+from cw.directory_walk import directory_walk
 from io import StringIO
 import os
 import re

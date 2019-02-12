@@ -3,6 +3,37 @@
 import numpy as np
 import math
 
+# Unit conversions
+slugs_ft3_to_kg_m3 = 515.378819
+kg_m3_to_slugs_ft3 = 1 / slugs_ft3_to_kg_m3
+
+slugs_ft2_to_kg_m2 = 1.35581795
+kg_m2_to_slugs_ft2 = 1 / slugs_ft2_to_kg_m2
+
+slugs_to_kg = 14.5939029
+kg_to_slugs = 1 / slugs_to_kg
+
+ft_to_meter = 0.3048
+meter_to_ft = 1 / ft_to_meter
+
+newton_to_lbs = 0.22480894244319
+lbs_to_N = 1 / newton_to_lbs
+
+fps_to_mps = 0.3048000
+mps_to_fps = 1 / fps_to_mps
+
+knot_to_mps = 0.514444
+mps_to_knot = 1 / knot_to_mps
+
+ft2_to_m2 = 0.092903
+m2_to_ft2 = 1 / ft2_to_m2
+
+deg_to_rad = math.pi / 180
+rad_to_deg = 180 / math.pi
+
+fps2_to_mps2 = 0.3048000
+mps2_to_fps2 = 1 / fps2_to_mps2
+
 
 def q_to_euler(q):
     """Converts Quaternions to Euler angles.
@@ -486,72 +517,6 @@ def hgeo_to_hpot(h_geo, Re=6371000.0):
     """
     
     return Re/(Re+h_geo)*h_geo
-
-
-def ft_to_m(feet):
-    """Conversion from feet to meters.
-    
-    Parameters
-    ----------
-    feet : float
-        Length in feet.
-    
-    Returns
-    -------
-    m : float
-        Length in meter.
-    """
-
-    return 0.3048*feet
-
-
-def m_to_ft(meters):
-    """Conversion from feet to meters.
-
-    Parameters
-    ----------
-    meters : float
-        Length in meters.
-    
-    Returns
-    -------
-    feet : float
-        Length in feet.
-    """
-
-    return meters/0.3048
-
-def knot_to_m(knot):
-    """Conversion from knots to metre per seconds.
-
-    Parameters
-    ----------
-    knot : float
-        Speed in knots.
-
-    Returns
-    -------
-    meter : float
-        Speed in metre per second.
-    """
-
-    return 0.514444*knot
-
-def m_to_knot(meters):
-    """Conversion from metre per seconds to knots.
-
-    Parameters
-    ----------
-    meters : float
-        Speed in metre per second.
-
-    Returns
-    -------
-    knots : float
-        Speed in knots.
-    """
-
-    return meters/0.514444
 
 
 def state_to_keplerian(Xi,Vi):
