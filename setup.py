@@ -1,6 +1,5 @@
 from setuptools import setup, find_packages
 from distutils.util import convert_path
-import sys
 
 
 ver_path = convert_path('cw/version.py')
@@ -32,7 +31,7 @@ setup(
                       "matplotlib"],
     packages=find_packages('.', exclude=["test"]),
     package_data={
-        "sim_common.file_formats.aero_file": "*.yaml",
+        "cw.aero_file": "*.yaml",
     },
     classifiers=[
         'Programming Language :: Python :: 3 :: Only',
