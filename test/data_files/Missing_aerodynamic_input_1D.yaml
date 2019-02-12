@@ -1,0 +1,16 @@
+case: Parachute test case
+description:
+  This files contains aerodynamic data for a 1D parachute model.
+created: 2017-08-31 13:57:00
+lref: 0.2
+sref: 7.5
+latref: 0.2
+mrc: [0, 0, 0]
+
+coefficients:
+  - name: c_x
+    model: regular_grid_interpolation
+    properties:
+      table: [0.5, 0.4, 0.6, 0.6, 0.5, 0.45]
+      parameters:
+        - [alpha, [0, 0.4, 0.8, 1.2, 2, 6]]

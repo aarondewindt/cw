@@ -1,0 +1,22 @@
+case: expensive_test_cokriging_aero_file
+description: Expensive data for the TestAeroFile.cheap_test_cokriging_aero_file unit test
+created: 2016-05-01 23:23:00
+lref: 0.2
+sref: 0.0314
+latref: 0.2
+mrc: [0, 0, 0]
+
+coefficients:
+  - name: c_d
+    model: linear_nd_interpolation
+    properties:
+      parameter_names:
+        - alpha
+        - mach
+      points: [
+        [4, 0.5],
+        [8, 0.9],
+        [4, 1.3],
+        [8, 1.7]]
+      values:
+        [1.4, 1.35, 1.15, 1.1]

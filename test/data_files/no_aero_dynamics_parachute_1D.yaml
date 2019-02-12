@@ -1,0 +1,10 @@
+case: Parachute test case
+description:
+  This files contains aerodynamic data for a 1D parachute model.
+created: 2017-08-31 13:57:00
+lref: 0.2
+sref: 7.5
+latref: 0.2
+mrc: [0, 0, 0]
+
+coefficients: []

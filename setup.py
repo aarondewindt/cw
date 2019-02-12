@@ -28,7 +28,8 @@ setup(
                       "openpyxl",
                       "psutil",
                       "pyproj",
-                      "requests"],
+                      "requests",
+                      "matplotlib"],
     packages=find_packages('.', exclude=["test"]),
     package_data={
         "sim_common.file_formats.aero_file": "*.yaml",

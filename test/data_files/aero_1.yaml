@@ -1,0 +1,83 @@
+case: Test case
+description:
+  This files contains aerodynamic data using different aerodynamic models. The main purpose of this file is to be used
+  as input for some of the unittest involving the AeroFile class. This file also serves as an example on how these
+  files should be structured.
+created: 2016-11-23 23:03:00
+lref: 0.2
+sref: 7.5
+latref: 0.2
+mrc: [0, 0, 0]
+
+coefficients:
+  - name: c_d
+    model: regular_grid_interpolation
+    properties:
+      table: [0.5, 0.4, 0.6, 0.6, 0.5, 0.45]
+      parameters:
+        - [mach, [0, 0.4, 0.8, 1.2, 2, 6]]
+
+  - name: c_x
+    model: regular_grid_interpolation
+    properties:
+      table: [[-1.2577    , -1.030525  , -0.89535   , -0.81665   , -0.7645    ],
+              [-1.2977    , -1.06395   , -0.924775  , -0.84371667, -0.79005   ],
+              [-1.3065    , -1.071325  , -0.9312    , -0.84965833, -0.7957    ],
+              [-1.2977    , -1.06395   , -0.924775  , -0.84371667, -0.79005   ],
+              [-1.2577    , -1.030525  , -0.89535   , -0.81665   , -0.7645    ]]
+      parameters:
+        - [alpha, [-5. , -2.5,  0. ,  2.5,  5. ]]
+        - [mach, [ 0.1  ,  0.275,  0.45 ,  0.625,  0.8  ]]
+
+  - name: c_m
+    model: linear_nd_interpolation
+    properties:
+      parameter_names:
+        - alpha
+        - mach
+      points: [
+        [-1.2, 0.1],
+        [0.0, 0.1],
+        [4.0, 0.1],
+        [8.0, 0.1],
+        [12.0, 0.1],
+        [-1.2, 0.5],
+        [0.0, 0.5],
+        [4.0, 0.5],
+        [8.0, 0.5],
+        [12.0, 0.5],
+        [-1.2, 0.9],
+        [0.0, 0.9],
+        [4.0, 0.9],
+        [8.0, 0.9],
+        [12.0, 0.9],
+        [-1.2, 1.3],
+        [0.0, 1.3],
+        [4.0, 1.3],
+        [8.0, 1.3],
+        [12.0, 1.3],
+        [-1.2, 1.7],
+        [0.0, 1.7],
+        [4.0, 1.7],
+        [8.0, 1.7],
+        [12.0, 1.7]]
+      values:
+        [0.2513, 0.0, -2.4088, -9.3068, -20.6336, 0.2527, 0.0, -2.4603, -9.7158, -21.9973,
+         0.2545, 0.0, -2.5167, -10.1453, -23.4089, 0.3008, 0.0, -3.0652, -12.6461, -31.5364,
+         0.3055, 0.0, -3.1374, -13.5819, -35.3548]
+
+# c_l:
+#   model: co-kriger
+#   properties:
+#      xc:
+#      xe:
+#      thetac:
+#      pc:
+#      thetad:
+#      pd:
+#      rho:
+#      sigma_c_sq:
+#      sigma_d_sq:
+#      C:
+#      mu:
+#      y:
