@@ -1,7 +1,7 @@
 import unittest
 from time import sleep, perf_counter as clock
 
-from sim_common.cached import cached, cached_class
+from cw.cached import cached, cached_class
 
 
 __author__ = "Aaron M. de Windt"

@@ -1,0 +1,83 @@
+case:
+  # Case name
+  type: string
+  required: True
+
+description:
+  # Case description
+  type: string
+  required: True
+
+created:
+  # Date and time in which the data in this file was created
+  required: True
+  anyof_type:
+    - string
+    - datetime
+
+lref:
+  # Reference length
+  required: True
+  type: number
+
+sref:
+  # Reference length
+  required: True
+  type: number
+
+latref:
+  # Reference lateral length. If missing lref will be used.
+  type: number
+  default: null
+
+mrc:
+  # Moment reference center
+  required: True
+  type: list
+  minlength: 3
+  maxlength: 3
+  schema:
+    type: number
+
+coefficients:
+  # List of aerodynamic coefficient models.
+  type: list
+  schema:
+
+  # Each model is declared using a dictionary with three parameters.
+    type: dict
+    schema:
+      name:
+      # Coefficient name
+        type: string
+        required: True
+        allowed:
+        # Force coefficients in body axis
+         - c_x # Axial force static coefficient.
+         - c_y # Side force static coefficient.
+         - c_z # Normal force static coefficient.
+
+         # Force coefficients in aerodynamic axis
+         - c_d # Drag force coefficient.
+         - c_q # Lateral force coefficient.
+         - c_l # Lift coefficient.
+
+         # Moment coefficients
+         - c_ll # Rolling moment static coefficient.
+         - c_m # Pitching moment static coefficient.
+         - c_ln # Yawing moment static coefficient.
+
+         # Derivatives
+         - c_m_a # Pitching moment coefficient w.r.t. angle of attack.
+
+      model:
+      # Model name
+        type: string
+        required: True
+      properties:
+      # Parameters to be passed to the model's class constructor.
+        type: dict
+        required: True
+
+# The models may validate the properties dictionary using their own schema.
+# For more information, please consult each model's documentation.
