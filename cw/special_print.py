@@ -1,25 +1,28 @@
 from io import StringIO
 import numpy as np
 import inspect
+import yaml
 
 
-def print_code(code: str, file=None):
+def code_print(code: str, file=None, print_function=None):
     """
     Print function used print out code with line numbers.
 
     :param code: String containing the code to print.
     :param file:
+    :param print_function: Print function to use. By default this
+                           is the python print(...) function.
     :return:
     """
     str_io = StringIO()
 
     lines = code.splitlines()
-    n_chars = int(np.ceil(np.log10(100))+2)
+    n_chars = int(np.floor(np.log10(len(lines))+1))
 
     for i, line in enumerate(lines):
-        str_io.write(f"{i+1: {n_chars}}| {line}\n")
+        str_io.write(f"{i+1:{n_chars}}| {line}\n")
 
-    print(str_io.getvalue(), file=file)
+    (print_function or print)(str_io.getvalue(), file=file)
 
 
 def debug_print(*args, sep=' ', file=None):
@@ -30,7 +33,7 @@ def debug_print(*args, sep=' ', file=None):
     :param sep: 
     :param file: 
     :return: 
-    """""
+    """
     file_name = inspect.stack()[1][1]
     line_no = inspect.stack()[1][2]
     function_name = inspect.stack()[1][3]
@@ -47,15 +50,27 @@ def verbose_print(verbose, print_function=None):
     :param print_function: Optional print function to use. Uses 'print' by default.
     :return:
     """
-    print_function = print_function or print
+
     if verbose:
-        return print_function
+        return print_function or print
     else:
         def vprint(*args, **kwars):
             pass
-        return vprint()
+        return vprint
 
 
-# Monkey patch debug print into the buildins to it's available everywhere.
+def yaml_print(obj, default_flow_style=False, print_func=debug_print):
+    """
+
+    :param obj: Object to print
+    :param default_flow_style: True to use PyYAML's default flow style. For more
+                               information check PyYAML's documentation.
+    :param print_func: Print function to use. By default its debug print.
+    :return:
+    """
+    return print_func(yaml.dump(obj, default_flow_style=default_flow_style))
+
+
+# Monkey patch debug print and yaml_print into the buildins so they are available everywhere.
 __builtins__["debug_print"] = debug_print
-
+__builtins__["yaml_print"] = yaml_print
