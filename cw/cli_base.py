@@ -6,6 +6,7 @@ class CLIBase:
     """
     Base class to give cli tools in cw a common interface to the main function.
     """
+
     @classmethod
     @abstractmethod
     def configure_arg_parser(cls, sub_parsers):
