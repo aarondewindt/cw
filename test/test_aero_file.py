@@ -11,7 +11,7 @@ from cw.aero_file import AeroFile
 from cw.aero_file.regular_grid_interpolation_coefficient_model import RegularGridInterpolationCoefficientModel
 from cw.aero_file.linear_nd_interpolation_coefficient_model import LinearNDInterpolationCoefficientModel
 from cw.flex_file import flex_load
-from cw.special_print import print_code
+from cw.special_print import code_print
 from test import test_path
 
 
@@ -323,7 +323,7 @@ class TestAeroFile(unittest.TestCase):
 
         print("")
         # print(code)
-        print_code(code)
+        code_print(code)
 
     def test_forces_moments_coefficients(self):
         aero_file = AeroFile(test_path / "data_files" / "3d_aero.aero")
@@ -348,7 +348,7 @@ class TestAeroFile(unittest.TestCase):
 
         print("test_setup_aerodynamic_forces_moments_calculation_parachute_1d")
         print(f"'''{code}'''")
-        # print_code(code)
+        # code_print(code)
 
         md5_obj = md5()
         md5_obj.update(code.encode("utf-8"))
@@ -365,7 +365,7 @@ class TestAeroFile(unittest.TestCase):
         )
 
         print("test_setup_aerodynamic_forces_moments_calculation_parachute_2d")
-        print_code(code)
+        code_print(code)
 
         md5_obj = md5()
         md5_obj.update(code.encode("utf-8"))
@@ -382,7 +382,7 @@ class TestAeroFile(unittest.TestCase):
         )
 
         print("test_setup_aerodynamic_forces_moments_calculation_parachute_3d")
-        print_code(code)
+        code_print(code)
 
         md5_obj = md5()
         md5_obj.update(code.encode("utf-8"))
@@ -413,7 +413,7 @@ class TestSetupAerodynamicForcesMomentCalculation(unittest.TestCase):
         )
 
         # print("test_alpha_missing")
-        # print_code(code)
+        # code_print(code)
 
         self.assert_md5(code, "3ee941c7cb34d83af6acced41038fa50")
 
@@ -425,7 +425,7 @@ class TestSetupAerodynamicForcesMomentCalculation(unittest.TestCase):
         )
 
         # print("test_dcm_missing")
-        # print_code(code)
+        # code_print(code)
         self.assert_md5(code, "07da3fc6f5c192cd91eb0da7dc6cd5e8")
 
     def test_alpha_dcm_available_parachute_2d(self):
@@ -436,7 +436,7 @@ class TestSetupAerodynamicForcesMomentCalculation(unittest.TestCase):
         )
 
         # print("test_alpha_dcm_available")
-        # print_code(code)
+        # code_print(code)
         self.assert_md5(code, "995ce2376db78884bc4ecf7106792ae3")
 
     def test_alpha_dcm_missing_use_defeault_alpha_parachute_2d(self):
@@ -447,7 +447,7 @@ class TestSetupAerodynamicForcesMomentCalculation(unittest.TestCase):
         )
 
         # print("test_alpha_dcm_missing")
-        # print_code(code)
+        # code_print(code)
         self.assert_md5(code, "0aa6f2fe6e787a56aab2ae47898186b1")
 
     def test_alpha_dcm_missing_default_alpha_missing_parachute_2d(self):
@@ -468,7 +468,7 @@ class TestSetupAerodynamicForcesMomentCalculation(unittest.TestCase):
         )
 
         # print("test_discard_dcm")
-        # print_code(code)
+        # code_print(code)
 
         self.assertEqual(aero_file.aero_parameter_names, {"alpha", "beta", "mach"})
 
@@ -480,7 +480,7 @@ class TestSetupAerodynamicForcesMomentCalculation(unittest.TestCase):
         )
 
         # print("test_nothing_missing")
-        # print_code(code)
+        # code_print(code)
         self.assert_md5(code, "c3d3e420bee34e1f240c7865ca08b1a2")
 
     def test_alpha_and_beta_missing_parachute_3d(self):
@@ -491,7 +491,7 @@ class TestSetupAerodynamicForcesMomentCalculation(unittest.TestCase):
         )
 
         # print("test_alpha_beta_missing")
-        # print_code(code)
+        # code_print(code)
         self.assert_md5(code, "4fc7d5906af7f7e5734d413fd1665b3c")
 
     def test_dcm_missing_parachute_3d(self):
@@ -502,7 +502,7 @@ class TestSetupAerodynamicForcesMomentCalculation(unittest.TestCase):
         )
 
         # print("test_dcm_missing")
-        # print_code(code)
+        # code_print(code)
         self.assert_md5(code, "966128c6c4c27d523baa9fa22721a233")
 
     def test_calculate_dcm_from_alpha_and_default_beta_parachute_3d(self):
@@ -513,7 +513,7 @@ class TestSetupAerodynamicForcesMomentCalculation(unittest.TestCase):
         )
 
         # print("test_calculate_dcm_from_alpha_default_beta_3d")
-        # print_code(code)
+        # code_print(code)
         self.assert_md5(code, "1be66bf6b65e1ef7646ff1d75f362323")
 
     def test_calculate_dcm_from_default_alpha_and_beta_parachute_3d(self):
@@ -524,7 +524,7 @@ class TestSetupAerodynamicForcesMomentCalculation(unittest.TestCase):
         )
 
         # print("test_calculate_dcm_from_default_alpha_and_beta_3d")
-        # print_code(code)
+        # code_print(code)
         self.assert_md5(code, "fa32af0ac4240f54ba57cae075027cfb")
 
     def test_calculate_dcm_from_default_alpha_and_default_beta_parachute_3d(self):
@@ -535,7 +535,7 @@ class TestSetupAerodynamicForcesMomentCalculation(unittest.TestCase):
         )
 
         # print("test_calculate_dcm_from_default_alpha_and_default_beta_3d")
-        # print_code(code)
+        # code_print(code)
         self.assert_md5(code, "374ffe1ba1b6f65df8a745fbd892956a")
 
     def test_everything_missing_parachute_3d(self):
@@ -568,7 +568,7 @@ class TestSetupAerodynamicForcesMomentCalculation(unittest.TestCase):
         # print("test_no_aerodynamics_parachute_1D")
         # print("test_no_aerodynamics_parachute_1D")
         # print(code)
-        # print_code(code)
+        # code_print(code)
         self.assert_md5(code, "8255a47a2a62c10f16a45426a0d4fd01")
 
     def test_coefficient_model_is_missing_aerodynamic_input_parameters_parachute_1d(self):
@@ -590,7 +590,7 @@ class TestSetupAerodynamicForcesMomentCalculation(unittest.TestCase):
 
         # print("")
         # print(code)
-        # print_code(code)
+        # code_print(code)
         self.assert_md5(code, "ff4d6f485e1c0e42b662e57f082ce907")
 
 

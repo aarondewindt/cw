@@ -31,7 +31,8 @@ setup(
                       "matplotlib",
                       "xarray",
                       "sympy",
-                      "control"],
+                      "control",
+                      "msgpack_numpy"],
     packages=find_packages('.', exclude=["test"]),
     package_data={
         "cw.aero_file": "*.yaml",

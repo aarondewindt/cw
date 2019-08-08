@@ -3,7 +3,7 @@ from cw.aero_file import aero_models_registry
 from cw.aero_file.coefficient_model_base import CoefficientModelBase
 from cw.aero_file import RegularGridInterpolationCoefficientModel
 from cw.flex_file import flex_load, flex_dump
-from cw.special_print import print_code
+from cw.special_print import code_print
 from cw.serializers import msgpack, yaml
 
 import os
@@ -337,7 +337,7 @@ class AeroFile:
             # Execute the generated code.
             exec(self.code_obj)  # Creates c_force and c_mom
         except:
-            print_code(self.code_str)
+            code_print(self.code_str)
             print("\n")
             raise
 
@@ -412,7 +412,7 @@ class AeroFile:
         try:
             exec(self.code_obj, globals(), results)  # Creates c_force and c_mom
         except:
-            print_code(self.code_str)
+            code_print(self.code_str)
             print("\n")
             raise
 
@@ -700,7 +700,7 @@ class AeroFile:
         # Get a string containing the code and compile it into a code object.
         self.code_str = force_moment_calculation_code_builder.getvalue()
 
-        # print_code(self.code_str)
+        # code_print(self.code_str)
 
         self.code_obj = compile(self.code_str, f"<generated_aerodynamic_model_for={self.path}>", "exec")
 
