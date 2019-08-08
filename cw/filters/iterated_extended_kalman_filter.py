@@ -195,8 +195,8 @@ class IteratedExtendedKalmanFilter:
         time_vector = data.t.values
 
         # Get matrix with measurements and inputs.
-        u_log = np.vstack(data[u_name].values for u_name in self.u_names).T if len(self.u) else [[]] * len(time_vector)
-        z_log = np.vstack(data[z_name].values for z_name in self.z_names).T
+        u_log = np.vstack([data[u_name].values for u_name in self.u_names]).T if len(self.u) else [[]] * len(time_vector)
+        z_log = np.vstack([data[z_name].values for z_name in self.z_names]).T
 
         # Create iterator that will give the final time of each iteration.
         t_f_iter = iter(time_vector)
@@ -332,17 +332,17 @@ def rk4(f: Callable,
     :param n: Number of iterations.
     :return: Final state vector.
     """
-    w = np.asarray(x_0).flatten()
+    w = np.asarray(x_0, dtype=np.float64).flatten()
     t = t_i
     h = (t_f - t_i) / n
 
     for j in range(1, n+1):
         k1 = h * f(t, *w, *u).flatten()
-        k2 = h * f(t + h/2, *(w+k1/2), *u).flatten()
-        k3 = h * f(t + h/2, *(w+k2/2), *u).flatten()
+        k2 = h * f(t + h/2., *(w+k1/2.), *u).flatten()
+        k3 = h * f(t + h/2., *(w+k2/2.), *u).flatten()
         k4 = h * f(t + h, *(w+k3), *u).flatten()
 
-        w += (k1 + 2 * k2 + 2 * k3 + k4) / 6.0
+        w += (k1 + 2. * k2 + 2. * k3 + k4) / 6.0
         t = t_i + j * h
 
     return w
