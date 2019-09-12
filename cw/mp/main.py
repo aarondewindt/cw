@@ -41,6 +41,13 @@ class MPCLI(CLIBase):
                                 help="Number of cases to give each processes per time. (default=1)")
         run_parser.set_defaults(func=cls.run)
 
+        clear_parser = mp_subparsers.add_parser("clear",
+                                               help="Clears the intermediate data for an incomplete local run.")
+        clear_parser.add_argument("path", help="Path of cw.mp project directory.",
+                                 nargs='?', default=os.getcwd())
+        clear_parser.add_argument("--output_name", "-o", help="Name of the output file. (default is the batch name)")
+        clear_parser.set_defaults(func=cls.clear)
+
     @classmethod
     def mp(cls, args: argparse.Namespace):
         if cls.main_parser:
@@ -54,6 +61,21 @@ class MPCLI(CLIBase):
             print("Error:", e)
         else:
             print(f"New cw.mp project initialized at '{args.path}'.")
+
+    @classmethod
+    def clear(cls, args: argparse.Namespace):
+        try:
+            project = Project(args.path)
+        except ValueError as e:
+            print("Error:", e)
+        else:
+            output_name = args.output_name or project.batch.name
+            intermediate_file_path = project.path / f"{output_name}.int.pickle"
+            if intermediate_file_path.exists():
+                intermediate_file_path.unlink()
+                print(f"Deleted '{intermediate_file_path}'")
+            else:
+                print(f"Already cleared '{intermediate_file_path}'")
 
     @classmethod
     def info(cls, args: argparse.Namespace):
