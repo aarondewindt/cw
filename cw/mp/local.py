@@ -13,7 +13,7 @@ from cw.mp.project import Project
 from cw.mp.batch_configuration_base import BatchConfigurationBase
 
 
-def run_project_locally(project: Project, output_name, n_cores, dump_interval=5, chunksize=10):
+def run_project_locally(project: Project, output_name: str, n_cores: int, dump_interval: int=5, chunksize: int=1):
     # Try to set the multiprocessing start method to 'fork'. This is the
     # the fastest in our case, but only works on unix systems
     try:

@@ -17,7 +17,6 @@ class BatchConfigurationBase(metaclass=ABCMeta):
         self.name = None  #: Batch name
         self.description = None  #: Batch description.
         self.project = None  #: The name of the project this batch belongs to.
-        self.dependencies = None
 
     @cached_class
     def input_parameters(cls):

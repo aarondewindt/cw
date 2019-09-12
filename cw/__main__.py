@@ -1,5 +1,6 @@
 import argparse
 from cw.generate_cython_pyi import Pyx2PyiCLI
+from cw.mp.main import MPCLI
 
 
 def main():
@@ -10,6 +11,7 @@ def main():
     subparsers = parser.add_subparsers()
 
     Pyx2PyiCLI.configure_arg_parser(subparsers)
+    MPCLI.configure_arg_parser(subparsers)
 
     args = parser.parse_args()
     if hasattr(args, "func"):
