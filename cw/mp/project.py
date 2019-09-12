@@ -1,5 +1,3 @@
-
-
 from pathlib import Path
 from typing import Union
 import os
@@ -24,7 +22,7 @@ class Project:
     def find_package_root_path(path: Union[str, Path]) -> Path:
         """
         Finds the path to the root directory of the batch. This is a directory containing
-        a .dcds directory. If the root directory is not found. A value error is raised.
+        a .cwmp directory. If the root directory is not found. A value error is raised.
 
         :param path: Path to the batch root or a sub directory
         :return: Path to the batch's root directory
@@ -45,7 +43,7 @@ class Project:
                 path = path.parent
 
         # If we have reached this point, that means that we have loop all the way
-        # up to the filesystem root. Thus the directory was not inside dcds batch.
+        # up to the filesystem root. Thus the directory was not inside cwmp batch.
         raise ValueError("Not a valid cw.mp project directory (or any of the parent directories): Missing "
                          ".cwmp directory")
 

@@ -31,7 +31,7 @@ class BatchConfiguration(BatchConfigurationBase):
         Either yield dictionaries with the input parameters for each case or return
         a list with all of these dictionaries.
         """
-        for in_a, in_b in product(range(1000), range(100)):
+        for in_a, in_b in product(range(10000), range(1)):
             yield self.InputTuple(in_a, in_b)
 
     def run_case(self, inputs: InputTuple) -> OutputTuple:

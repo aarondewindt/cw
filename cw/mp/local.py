@@ -16,6 +16,8 @@ from cw.mp.batch_configuration_base import BatchConfigurationBase
 # I don't like having globals, but since all subprocesses need the same
 # batch object we can save the constant pickling and unpickling of it
 # by moving it to the global space before forking the new subprocesses.
+# This is probably not threadsafe. So don't run run_project_locally(...)
+# on multiple threads at the same time.
 batch: BatchConfigurationBase = None
 
 
@@ -23,7 +25,7 @@ def run_project_locally(project: Project, output_name: str, n_cores: int, dump_i
     global batch
 
     # Try to set the multiprocessing start method to 'fork'. This is the
-    # the fastest in our case, but only works on unix systems
+    # the fastest in our case, but it only works on unix systems
     try:
         set_start_method('fork')
     except:
