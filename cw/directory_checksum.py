@@ -97,6 +97,10 @@ class DirectoryChecksum:
         # Return the hash of the checksum file.
         return hash_generator.digest()
 
+    def delete_checksum_file(self):
+        if self.checksum_file_path.exists():
+            self.checksum_file_path.unlink()
+
     def ignore_pattern_filter(self, path):
         """
         Checks whether a path doesn't match one of the ignore patterns.

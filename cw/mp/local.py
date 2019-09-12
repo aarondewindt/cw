@@ -13,17 +13,13 @@ from cw.mp.project import Project
 from cw.mp.batch_configuration_base import BatchConfigurationBase
 
 
-def run_project_locally(project: Project, output_name, n_cores):
+def run_project_locally(project: Project, output_name, n_cores, dump_interval=5, chunksize=10):
     # Try to set the multiprocessing start method to 'fork'. This is the
     # the fastest in our case, but only works on unix systems
     try:
         set_start_method('fork')
     except:
         pass
-
-    # Time in seconds between when data is dumped to
-    dump_interval = 10
-    chunksize = 1
 
     # Create the paths to the intermediate file path and output file.
     intermediate_file_path = project.path / f"{output_name}.int.pickle"
@@ -36,17 +32,22 @@ def run_project_locally(project: Project, output_name, n_cores):
     # was dumped into the intermediate result file.
     last_idx = None
     if intermediate_file_path.exists():
-        with intermediate_file_path.open("rb") as f:
-            # Loop to read all blocks in the pickle file stream and keep the last block
-            last_result_block = None
-            while True:
-                try:
-                    last_result_block = pickle.load(f)
-                except EOFError:
-                    break
-            # If no blocks where found keep idx at None
-            if last_result_block is not None:
-                last_idx = last_result_block[0]
+        if project.validate_directory():
+            with intermediate_file_path.open("rb") as f:
+                # Loop to read all blocks in the pickle file stream and keep the last block
+                last_result_block = None
+                while True:
+                    try:
+                        last_result_block = pickle.load(f)
+                    except EOFError:
+                        break
+                # If no blocks where found keep idx at None
+                if last_result_block is not None:
+                    last_idx = last_result_block[0]
+        else:
+            raise RuntimeError("Project code and/or data has been changed during an incomplete local run.")
+    else:
+        project.create_checksum_file(force=True)
 
     # Last time data was dumped to the intermediate file.
     last_dump_time = time.perf_counter()

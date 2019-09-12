@@ -178,10 +178,13 @@ class Project:
 
     @cached
     def directory_checksum_validator(self) -> DirectoryChecksum:
-        return DirectoryChecksum(self.path, checksum_file_path=self.path / ".dcds" / "checksum")
+        return DirectoryChecksum(self.path, checksum_file_path=self.path / ".cwmp" / "checksum")
 
-    def create_checksum_file(self):
-        return self.directory_checksum_validator.create_checksum_file(force=True)
+    def create_checksum_file(self, force=False):
+        return self.directory_checksum_validator.create_checksum_file(force=force)
+
+    def delete_checksum_file(self):
+        self.directory_checksum_validator.delete_checksum_file()
 
     def validate_directory(self, checksum_file_hash=None):
         return self.directory_checksum_validator.validate_directory(checksum_file_hash)
