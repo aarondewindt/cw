@@ -5,7 +5,6 @@ from time import sleep
 from itertools import product
 
 
-
 class BatchConfiguration(BatchConfigurationBase):
 
     # Batch input and output parameters.

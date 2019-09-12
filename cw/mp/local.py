@@ -13,7 +13,15 @@ from cw.mp.project import Project
 from cw.mp.batch_configuration_base import BatchConfigurationBase
 
 
+# I don't like having globals, but since all subprocesses need the same
+# batch object we can save the constant pickling and unpickling of it
+# by moving it to the global space before forking the new subprocesses.
+batch: BatchConfigurationBase = None
+
+
 def run_project_locally(project: Project, output_name: str, n_cores: int, dump_interval: int=5, chunksize: int=1):
+    global batch
+
     # Try to set the multiprocessing start method to 'fork'. This is the
     # the fastest in our case, but only works on unix systems
     try:
@@ -26,7 +34,7 @@ def run_project_locally(project: Project, output_name: str, n_cores: int, dump_i
     output_file_path = project.path / f"{output_name}.pickle"
 
     # Get package configuration object.
-    batch: BatchConfigurationBase = project.batch
+    batch = project.batch
 
     # If an intermediate file exists, get the index of the last case that
     # was dumped into the intermediate result file.
@@ -55,7 +63,7 @@ def run_project_locally(project: Project, output_name: str, n_cores: int, dump_i
     # Generator that yields the case index, case_input, dictionary and the batch object
     def cases():
         for i, case_input in enumerate(batch.create_cases()):
-            yield i, tuple(case_input), batch
+            yield i, tuple(case_input)
 
     # Create iterator object from the generator
     cases_iter = iter(cases())
@@ -118,9 +126,11 @@ def dump_block(path, block):
 
 
 def process_case(case):
+    global batch
     signal.signal(signal.SIGINT, signal.SIG_IGN)
     sys.stdout = write_null
-    i, case_input, batch = case
+    i, case_input = case
+
     # Run case
     case_output = batch.run_case(batch.InputTuple(*case_input))
     # Merge input and output tuples into a single tuple.
