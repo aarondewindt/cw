@@ -32,7 +32,8 @@ setup(
                       "xarray",
                       "sympy",
                       "control",
-                      "msgpack_numpy"],
+                      "msgpack_numpy",
+                      "pandas"],
     packages=find_packages('.', exclude=["test"]),
     package_data={
         "cw.aero_file": "*.yaml",
