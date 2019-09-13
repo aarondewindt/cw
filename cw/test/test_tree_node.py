@@ -64,7 +64,7 @@ class TestTreeNode(unittest.TestCase):
 
     def test_node_from_path_with_missing_failing(self):
         root = TreeNode()
-        with self.assertRaisesRegexp(KeyError,
+        with self.assertRaisesRegex(KeyError,
                                      re.escape(r"Node with key 'hello' in path 'hello/world' does not exist.")):
             root.node_from_path(PurePosixPath("./hello/world"))
 

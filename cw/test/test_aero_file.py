@@ -12,7 +12,7 @@ from cw.aero_file.regular_grid_interpolation_coefficient_model import RegularGri
 from cw.aero_file.linear_nd_interpolation_coefficient_model import LinearNDInterpolationCoefficientModel
 from cw.flex_file import flex_load
 from cw.special_print import code_print
-from test import test_path
+from cw.test import test_path
 
 
 # Create a pretty printer

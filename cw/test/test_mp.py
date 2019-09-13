@@ -1,10 +1,7 @@
 import unittest
 from pathlib import Path
-import pickle
 
-import pandas as pd
-
-from test import test_path
+from cw.test import test_path
 
 from cw.mp import Project
 from cw.rm import rrmdir

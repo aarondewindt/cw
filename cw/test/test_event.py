@@ -28,7 +28,7 @@ class TestEvent(unittest.TestCase):
         event(data)
 
         # Check whether the handlers where called.
-        self.assertEquals(data, [23, 78])
+        self.assertEqual(data, [23, 78])
 
     # This unit test ran successfully on 2017-01-15. The reason it's skipped is becuase
     # of the current setup with the event handler. The stop function does not seem to be threadsafe.

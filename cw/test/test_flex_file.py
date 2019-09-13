@@ -1,14 +1,11 @@
 import unittest
-import os
-import sys
-from traceback import format_exception
 from pathlib import Path
 
 from cw.flex_file import flex_load, flex_dump, determine_serialization
 from cw.rm import rm, rrmdir
 from cw.object_hierarchies import object_hierarchy_equals
 from cw.serializers import yaml, msgpack
-from test import test_path
+from cw.test import test_path
 
 from itertools import product
 import pickle
