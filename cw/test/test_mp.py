@@ -1,5 +1,5 @@
 import unittest
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 from cw.test import test_path
 
@@ -54,7 +54,7 @@ class TestMP(unittest.TestCase):
         # Get list of all files and directories that where created.
         paths = set()
         for path in project_path.rglob("*"):
-            paths.add(str(path.relative_to(project_path)))
+            paths.add(str(PurePosixPath(path.relative_to(project_path))))
 
         self.assertEqual(paths, correct_paths)
         
@@ -91,7 +91,7 @@ class TestMP(unittest.TestCase):
         project_path = test_projects_path / "local_pool"
         project = Project(project_path)
 
-        result = run_project_locally(project, "result.i", 8)
+        result = run_project_locally(project, "result.i", 1)
         for (row_idx, row_values), inputs in zip(result.iterrows(), project.batch.create_cases()):
             out_c = inputs.in_a + inputs.in_b
             out_d = inputs.in_a * inputs.in_b
@@ -99,4 +99,3 @@ class TestMP(unittest.TestCase):
             self.assertEqual(row_values['in_b'], inputs.in_b)
             self.assertEqual(row_values['out_c'], out_c)
             self.assertEqual(row_values['out_d'], out_d)
-

@@ -28,7 +28,9 @@ def run_project_locally(project: Project, output_name: str, n_cores: int, dump_i
     # the fastest in our case, but it only works on unix systems
     try:
         set_start_method('fork')
+        is_start_method_fork = True
     except:
+        is_start_method_fork = False
         pass
 
     # Create the paths to the intermediate file path and output file.
@@ -65,7 +67,10 @@ def run_project_locally(project: Project, output_name: str, n_cores: int, dump_i
     # Generator that yields the case index, case_input, dictionary and the batch object
     def cases():
         for i, case_input in enumerate(batch.create_cases()):
-            yield i, tuple(case_input)
+            if is_start_method_fork:
+                yield i, tuple(case_input), None
+            else:
+                yield i, tuple(case_input), batch
 
     # Create iterator object from the generator
     cases_iter = iter(cases())
@@ -128,10 +133,12 @@ def dump_block(path, block):
 
 
 def process_case(case):
-    global batch
+    global global_batch
     signal.signal(signal.SIGINT, signal.SIG_IGN)
     sys.stdout = write_null
-    i, case_input = case
+    i, case_input, batch = case
+
+    batch = batch or global_batch
 
     # Run case
     case_output = batch.run_case(batch.InputTuple(*case_input))
