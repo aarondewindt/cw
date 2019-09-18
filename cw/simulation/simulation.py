@@ -8,7 +8,7 @@ import numpy as np
 from cw.simulation.integrator_base import IntegratorBase
 from cw.simulation.states_base import StatesBase
 from cw.simulation.module_base import ModuleBase
-from cw.simulation.logging_base import LoggingBase
+from cw.simulation.logging import LoggingBase
 from cw.simulation.exception import SimulationError
 
 
