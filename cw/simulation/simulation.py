@@ -1,5 +1,5 @@
 from contextlib import contextmanager
-from copy import deepcopy
+from copy import deepcopy, copy
 from typing import Sequence, List, Set
 from dataclasses import fields, is_dataclass
 
@@ -8,7 +8,7 @@ import numpy as np
 from cw.simulation.integrator_base import IntegratorBase
 from cw.simulation.states_base import StatesBase
 from cw.simulation.module_base import ModuleBase
-from cw.simulation.logging import LoggingBase
+from cw.simulation.logging import Logging
 from cw.simulation.exception import SimulationError
 
 
@@ -17,7 +17,7 @@ class Simulation:
                  states_class: type,
                  integrator: IntegratorBase,
                  modules: Sequence[ModuleBase],
-                 logging: LoggingBase,
+                 logging: Logging,
                  initial_state_values=None):
         self.integrator = integrator
         self.modules = modules
@@ -33,14 +33,11 @@ class Simulation:
         self.continuous_modules: List[ModuleBase] = []
 
     @contextmanager
-    def temporary_states(self, temporary=True, persist_discreet_states=False):
+    def temporary_states(self, temporary=True):
         if temporary:
             original_states = self.states
-            self.states = deepcopy(original_states)
+            self.states = copy(original_states)
             yield
-            if persist_discreet_states:
-                # Copy the values from the discreet states into the original states.
-                pass
             del self.states
             self.states = original_states
         else:
@@ -48,6 +45,7 @@ class Simulation:
 
     def initialize(self):
         self.integrator.initialize(self)
+        self.logging.initialize(self)
 
         # Sort discrete and continuous modules
         for module in self.modules:
@@ -59,24 +57,52 @@ class Simulation:
 
             module.initialize(self)
 
+        time_field_valid = False
         for field in fields(self.states):
             field_value = getattr(self.states, field.name)
             try:
-                if np.isnan(field_value):
+                if np.any(np.isnan(field_value)):
                     raise SimulationError(f"State {field.name} initial value contains 'Nan'.")
-
             except TypeError:
                 if field_value is None:
                     raise SimulationError(f"State {field.name} initial value is 'None'.")
 
-    def step_modules(self, run_discreet):
-        for module in self.modules:
-            if not module.is_discreet:
-                module.step()
-            else:
-                if run_discreet:
-                    module.step()
+            if field.name == "t":
+                time_field_valid = field.type == float
+
+        if not time_field_valid:
+            raise SimulationError("The time field 't' in the states dataclass is missing or of invalid type.")
 
     def run(self, n_steps):
-        self.integrator.run(n_steps)
+        return self.integrator.run(n_steps)
+
+    def get_y_dot(self, t, y, *, temporary=True):
+        """
+        Executes all of the continuous modules and returns the state vector derivative.
+        """
+        with self.temporary_states(temporary):
+            # Set the simulation state.
+            self.states.set_t_y(t, y)
+            # Run continuous modules
+            for module in self.continuous_modules:
+                module.step()
+            # Get the state vector derivative.
+            return self.states.get_y_dot()
+
+    def step_continuous_modules(self, t, y):
+        """
+        Executes all of the continuous modules.
+        """
+        self.states.set_t_y(t, y)
+        for module in self.continuous_modules:
+            module.step()
+
+    def step_discrete_modules(self):
+        for module in self.discrete_modules:
+            module.step()
+
+    def step_all_modules(self, t, y):
+        self.states.set_t_y(t, y)
+        for module in self.modules:
+            module.step()
 
