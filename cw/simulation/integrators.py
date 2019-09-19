@@ -11,7 +11,7 @@ class AB3Integrator(IntegratorBase):
                  h: Optional[float] = None,
                  rk4: bool):
         super().__init__()
-        self.rk4 = rk4
+        self.rk4 = True
         self.h: float = h
         self.hdiv2: float = self.h / 2
         self.hdiv6: float = self.h / 6
@@ -26,21 +26,16 @@ class AB3Integrator(IntegratorBase):
     def run(self, n_steps: int):
         self.simulation.logging.reset(n_steps)
         t = self.simulation.states.t
+        self.previous_step_t1 = self.simulation.states.t
+        self.previous_step_y1 = self.simulation.states.get_y()
         for step_idx in range(n_steps):
             t += self.h
-            self.run_single_step(t)
+            self.run_single_step(step_idx, t)
         return self.simulation.logging.finish()
 
-    def run_single_step(self, t1: float):
-        # Get the time and state vector.
-        # If this is our first iteration then we need to get them from the
-        # states object.
-        if self.previous_step_y1 is None:
-            y0 = self.simulation.states.get_y()
-            t0 = self.simulation.states.t
-        else:
-            y0 = self.previous_step_y1
-            t0 = self.previous_step_t1
+    def run_single_step(self, step_idx: int, t1: float):
+        y0 = self.previous_step_y1
+        t0 = self.previous_step_t1
 
         # Step all modules at t0.
         self.simulation.step_all_modules(t0, y0)
@@ -51,11 +46,8 @@ class AB3Integrator(IntegratorBase):
         # Derivative of y at t0.
         y0_dot = self.simulation.states.get_y_dot()
 
-        if not np.isclose(t1, t0 + self.h, rtol=1e-09, atol=1e-11):
-            raise SimulationError("Only fixed step size allowed. Expected: " + str(self.h) + ", received: " + str(t1-t0))
-
         # Use RK4 for the first few steps or if we have to use it.
-        if (self.k[1] is None) or self.rk4:
+        if (step_idx < 4) or self.rk4:
             self.k.pop()
             k1 = self.h * y0_dot
             k2 = self.h * self.simulation.get_y_dot(t0 + self.hdiv2, y0 + k1/2)

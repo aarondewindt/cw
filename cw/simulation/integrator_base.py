@@ -15,5 +15,5 @@ class IntegratorBase:
     def run(self, n_steps):
         raise NotImplemented()
 
-    def run_single_step(self, t1: float):
+    def run_single_step(self, step_idx: int, t1: float):
         raise NotImplemented()

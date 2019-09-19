@@ -4,6 +4,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from cw.simulation import Simulation, StatesBase, AB3Integrator, ModuleBase, Logging
+from cw.context import time_it
+
 
 nan = float('nan')
 
@@ -13,7 +15,7 @@ def main():
         states_class=Sim1States,
         integrator=AB3Integrator(
             h=0.001,
-            rk4=True),
+            rk4=False),
         modules=[
             ModuleA()
         ],
@@ -23,7 +25,9 @@ def main():
 
     simulation.initialize()
 
-    result = simulation.run(10000)
+    with time_it("simulation run"):
+        result = simulation.run(10000)
+        result = simulation.run(10000)
 
     # print(result)
     #
@@ -31,7 +35,6 @@ def main():
     # result.s[:, 0].plot()
     # result.s[:, 1].plot()
     # result.s[:, 2].plot()
-    #
     # plt.show()
 
 
@@ -46,10 +49,10 @@ class Sim1States(StatesBase):
     state: str = "qwerty"
 
     def get_y_dot(self):
-        return np.array([self.v, self.a])
+        return np.array([self.v, self.a], dtype=np.float)
 
     def get_y(self):
-        return np.array([self.s, self.v])
+        return np.array([self.s, self.v], dtype=np.float)
 
     def set_t_y(self, t, y):
         self.t = t
