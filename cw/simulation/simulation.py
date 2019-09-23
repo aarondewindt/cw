@@ -29,7 +29,6 @@ class Simulation:
         self.states: StatesBase = states_class(**(initial_state_values or {}))
 
         self.discrete_modules: List[ModuleBase] = []
-        self.discrete_states: Set[str] = set()
         self.continuous_modules: List[ModuleBase] = []
 
     @contextmanager
@@ -51,7 +50,6 @@ class Simulation:
         for module in self.modules:
             if module.is_discreet:
                 self.discrete_modules.append(module)
-                self.discrete_states.update(module.output_states)
             else:
                 self.continuous_modules.append(module)
 
