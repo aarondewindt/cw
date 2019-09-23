@@ -83,7 +83,7 @@ class Simulation:
             self.states.set_t_y(t, y)
             # Run continuous modules
             for module in self.continuous_modules:
-                module.step()
+                module.run_step()
             # Get the state vector derivative.
             return self.states.get_y_dot()
 
@@ -93,17 +93,17 @@ class Simulation:
         """
         self.states.set_t_y(t, y)
         for module in self.continuous_modules:
-            module.step()
+            module.run_step()
 
     def step_discrete_modules(self):
         for module in self.discrete_modules:
-            module.step()
+            module.run_step()
 
     def step_all_modules(self, t, y):
         self.states.set_t_y(t, y)
         for module in self.modules:
             if module.is_discreet:
-                if abs(t % module.target_time_step) < 1e-8:
-                    module.step()
+                if (t % module.target_time_step) < 1e-8:
+                    module.run_step()
             else:
-                module.step()
+                module.run_step()

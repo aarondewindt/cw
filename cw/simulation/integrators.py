@@ -1,6 +1,7 @@
 from typing import Optional, Callable, Deque, Tuple, Union
 import numpy as np
 from collections import deque
+from math import remainder
 
 from cw.simulation.integrator_base import IntegratorBase
 from cw.simulation.exception import SimulationError
@@ -24,6 +25,11 @@ class AB3Integrator(IntegratorBase):
         self.simulation = simulation
 
     def run(self, n_steps: int):
+        for module in self.simulation.discrete_modules:
+            if not (remainder(module.target_time_step, self.h) < 1e-8):
+                raise SimulationError(f"Discreet module '{module.__class__.__name__}' "
+                                      f"target time step is not an integer multiple of the integrator time step.")
+
         self.simulation.logging.reset(n_steps)
         t = self.simulation.states.t
         self.previous_step_t1 = self.simulation.states.t

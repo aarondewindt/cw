@@ -31,7 +31,7 @@ def main():
         result = simulation.run(1000)
 
     plotter = Plotter()
-    plotter.plot_to_pdf(Path(__file__).parent / "results.pdf", result)
+    plotter.plot_to_pdf(Path(__file__).parent / "results.i.pdf", result)
 
 
 @dataclass
