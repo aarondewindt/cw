@@ -47,11 +47,21 @@ class Simulation:
         self.logging.initialize(self)
 
         # Sort discrete and continuous modules
+        # and check for required states
         for module in self.modules:
             if module.is_discreet:
                 self.discrete_modules.append(module)
             else:
                 self.continuous_modules.append(module)
+
+            if module.required_states:
+                states_set = set(module.required_states)
+                for field in fields(self.states):
+                    if field.name in states_set:
+                        states_set.remove(field.name)
+                if len(states_set):
+                    raise SimulationError(
+                        f"Missing required states for module '{module.name}': {', '.join(states_set)}")
 
             module.initialize(self)
 

@@ -45,14 +45,13 @@ class AB3Integrator(IntegratorBase):
         return self.simulation.logging.finish()
 
     def run_single_step(self, step_idx: int, t1: float):
-        print("run_single_step", t1)
+        # print("run_single_step", t1)
         y0 = self.previous_step_y1
         t0 = self.previous_step_t1
 
         if self.must_differentiate:
             self.simulation.states.set_differentiation_y_dot(
-                self.fd.differentiate(self.simulation.states.get_differentiation_y())
-            )
+                self.fd.differentiate(self.simulation.states.get_differentiation_y()))
 
         # Step all modules at t0.
         self.simulation.step_all_modules(t0, y0)

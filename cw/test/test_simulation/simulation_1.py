@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from cw.simulation import Simulation, StatesBase, AB3Integrator, ModuleBase, Logging, Plotter
+from cw.simulation.modules import EOM6DOF
 from cw.context import time_it
 
 
@@ -20,7 +21,7 @@ def main():
             fd_max_order=1),
         modules=[
             ModuleA(),
-            ModuleB()
+            ModuleB(),
         ],
         logging=Logging(),
         initial_state_values=None,
@@ -29,7 +30,7 @@ def main():
     simulation.initialize()
 
     with time_it("simulation run"):
-        result = simulation.run(1000)
+        result = simulation.run(10000)
 
     plotter = Plotter()
     plotter.plot_to_pdf(Path(__file__).parent / "results.i.pdf", result)
@@ -45,7 +46,7 @@ class Sim1States(StatesBase):
     a: np.ndarray = np.zeros(3)
     a_fd: np.ndarray = np.zeros(3)
     # i: np.ndarray = np.eye(3)
-    state: str = "qwerty"
+    # state: str = "qwerty"
 
     def get_y_dot(self):
         return np.array([self.v, self.a], dtype=np.float)
@@ -75,22 +76,24 @@ class ModuleA(ModuleBase):
         simulation.states.a = np.array([0., 0., 0.])
 
     def step(self):
-        print("Module A step")
+        pass
+        # print("Module A step")
         # self.simulation.states.a = 1
 
 
 class ModuleB(ModuleBase):
     def __init__(self):
         super().__init__(is_discreet=True,
-                         target_time_step=0.5)
+                         target_time_step=2)
         self.da = 0.1
 
     def initialize(self, simulation):
         super().initialize(simulation)
 
     def step(self):
-        print("Module B step")
+        # print("Module B step")
         a = self.simulation.states.a[0]
         self.s.a = np.array([self.da, 0, 0])
         self.da *= -1
+
 main()
