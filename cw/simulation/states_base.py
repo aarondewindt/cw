@@ -12,3 +12,11 @@ class StatesBase:
 
     def set_t_y(self, t, y):
         raise NotImplemented()
+
+    @staticmethod
+    def get_differentiation_y():
+        return None
+
+    @staticmethod
+    def set_differentiation_y_dot(y_dot):
+        pass

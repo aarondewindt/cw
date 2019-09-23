@@ -4,7 +4,7 @@ from typing import Optional, Sequence
 class ModuleBase:
     def __init__(self, *,
                  target_time_step: Optional[float]=None,
-                 is_discreet: bool=False,):
+                 is_discreet: bool=False):
         if is_discreet:
             if target_time_step is None:
                 raise ValueError("target_time_step must be set for discreet modules.")

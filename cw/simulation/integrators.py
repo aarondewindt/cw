@@ -5,14 +5,17 @@ from math import remainder
 
 from cw.simulation.integrator_base import IntegratorBase
 from cw.simulation.exception import SimulationError
+from cw.simulation.differentiation import FiniteDifference
 
 
 class AB3Integrator(IntegratorBase):
     def __init__(self, *,
                  h: Optional[float] = None,
-                 rk4: bool):
+                 rk4: bool,
+                 fd_max_order: int=4):
         super().__init__()
         self.rk4 = rk4
+        self.fd = FiniteDifference(step_size=h, max_order=fd_max_order)
         self.h: float = h
         self.hdiv2: float = self.h / 2
         self.hdiv6: float = self.h / 6
@@ -20,6 +23,7 @@ class AB3Integrator(IntegratorBase):
         self.k: Deque[Union[None, float]] = deque([None, None, None, None])
         self.previous_step_y1 = None
         self.previous_step_t1 = None
+        self.must_differentiate = None
 
     def initialize(self, simulation):
         self.simulation = simulation
@@ -31,11 +35,12 @@ class AB3Integrator(IntegratorBase):
                                       f"target time step is not an integer multiple of the integrator time step.")
 
         self.simulation.logging.reset(n_steps)
-        t = self.simulation.states.t
+        t0 = self.simulation.states.t
+        self.must_differentiate = self.simulation.states.get_differentiation_y() is not None
         self.previous_step_t1 = self.simulation.states.t
         self.previous_step_y1 = self.simulation.states.get_y()
         for step_idx in range(n_steps):
-            t = (step_idx + 1) * self.h
+            t = t0 + (step_idx + 1) * self.h
             self.run_single_step(step_idx, t)
         return self.simulation.logging.finish()
 
@@ -43,6 +48,11 @@ class AB3Integrator(IntegratorBase):
         print("run_single_step", t1)
         y0 = self.previous_step_y1
         t0 = self.previous_step_t1
+
+        if self.must_differentiate:
+            self.simulation.states.set_differentiation_y_dot(
+                self.fd.differentiate(self.simulation.states.get_differentiation_y())
+            )
 
         # Step all modules at t0.
         self.simulation.step_all_modules(t0, y0)
