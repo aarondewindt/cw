@@ -102,5 +102,8 @@ class Simulation:
     def step_all_modules(self, t, y):
         self.states.set_t_y(t, y)
         for module in self.modules:
-            module.step()
-
+            if module.is_discreet:
+                if abs(t % module.target_time_step) < 1e-8:
+                    module.step()
+            else:
+                module.step()

@@ -7,6 +7,9 @@ class ModuleBase:
                  is_discreet: bool=False,
                  output_states: Optional[Sequence[str]]=None
                  ):
+        if is_discreet:
+            if target_time_step is None:
+                raise ValueError("target_time_step must be set for discreet modules.")
         self.simulation = None
         self.target_time_step = target_time_step
         self.is_discreet = is_discreet

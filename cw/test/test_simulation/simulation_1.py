@@ -14,7 +14,7 @@ def main():
     simulation = Simulation(
         states_class=Sim1States,
         integrator=AB3Integrator(
-            h=0.001,
+            h=0.01,
             rk4=True),
         modules=[
             ModuleA(),
@@ -27,7 +27,7 @@ def main():
     simulation.initialize()
 
     with time_it("simulation run"):
-        result = simulation.run(10)
+        result = simulation.run(1000)
 
     plotter = Plotter()
     plotter.process_results(result)
@@ -71,7 +71,8 @@ class ModuleA(ModuleBase):
 
 class ModuleB(ModuleBase):
     def __init__(self):
-        super().__init__(is_discreet=True)
+        super().__init__(is_discreet=True,
+                         target_time_step=0.5)
 
     def initialize(self, simulation):
         super().initialize(simulation)
@@ -79,5 +80,5 @@ class ModuleB(ModuleBase):
     def step(self):
         print("Module B step")
         a = self.simulation.states.a[0]
-        self.simulation.states.a = np.array([1, 0, 0])
+        self.simulation.states.a = np.array([a + 0.1, 0, 0])
 main()

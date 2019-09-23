@@ -29,12 +29,12 @@ class AB3Integrator(IntegratorBase):
         self.previous_step_t1 = self.simulation.states.t
         self.previous_step_y1 = self.simulation.states.get_y()
         for step_idx in range(n_steps):
-            t += self.h
+            t = (step_idx + 1) * self.h
             self.run_single_step(step_idx, t)
         return self.simulation.logging.finish()
 
     def run_single_step(self, step_idx: int, t1: float):
-        print("run_single_step")
+        print("run_single_step", t1)
         y0 = self.previous_step_y1
         t0 = self.previous_step_t1
 
@@ -49,7 +49,6 @@ class AB3Integrator(IntegratorBase):
 
         # Use RK4 for the first few steps or if we have to use it.
         if (step_idx < 4) or self.rk4:
-            print("rk4")
             self.k.popleft()
             k1 = self.h * y0_dot
             k2 = self.h * self.simulation.get_y_dot(t0 + self.hdiv2, y0 + k1/2)
@@ -60,7 +59,6 @@ class AB3Integrator(IntegratorBase):
 
         # Use Adams-Bashforth 3 when possible
         else:
-            print("ab3")
             self.k.popleft()
             self.k.append(y0_dot)
             y1 = y0 + self.hdiv24 * (55 * self.k[3] - 59 * self.k[2] + 37 * self.k[1] - 9 * self.k[0])
