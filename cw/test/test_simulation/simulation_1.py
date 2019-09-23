@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from pathlib import Path
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -30,8 +31,7 @@ def main():
         result = simulation.run(1000)
 
     plotter = Plotter()
-    plotter.process_results(result)
-    plt.show()
+    plotter.plot_to_pdf(Path(__file__).parent / "results.pdf", result)
 
 
 @dataclass

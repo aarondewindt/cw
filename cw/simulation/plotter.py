@@ -1,19 +1,26 @@
 import xarray as xr
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
 from itertools import product
 from typing import Optional
+from pathlib import Path
 
 
 class Plotter:
     def __init__(self):
         pass
 
-    def process_results(self, result: xr.Dataset):
+    def plot(self, result: xr.Dataset, sup_title=None, figsize=(15, 7)):
         for state_name in result:
-            self.default_plotter(result[state_name])
+            self.default_plotter(result[state_name], sup_title, figsize)
 
-        plt.show()
+    def plot_to_pdf(self, path: Path, result: xr.Dataset, sup_title=None, figsize=(15, 7)):
+        with PdfPages(str(path)) as pdf_file:
+            for state_name in result:
+                fig = self.default_plotter(result[state_name], sup_title, figsize)
+                pdf_file.savefig(fig)
+                plt.close(fig)
 
     def default_plotter(self, data: xr.DataArray, sup_title: Optional[str]=None, figsize=(15, 7)):
         fig = plt.figure(figsize=figsize)
@@ -31,4 +38,6 @@ class Plotter:
                 plt.plot(data_t, data_values[(slice(None), *idx)])
                 legend.append(", ".join(map(str, idx)))
             plt.legend(legend)
+        else:
+            plt.plot(data_t, data_values)
         return fig
