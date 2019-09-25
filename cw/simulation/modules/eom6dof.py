@@ -1,5 +1,6 @@
+import numpy as np
+
 from cw.simulation.module_base import ModuleBase
-from dataclasses import fields
 
 
 class EOM6DOF(ModuleBase):
@@ -10,5 +11,11 @@ class EOM6DOF(ModuleBase):
             "omega_dot", "omega", "q"])
 
     def step(self):
-        pass
+        # Acceleration
+        self.s.ab = self.s.force / self.s.mass + np.cross(self.s.vb, self.s.omega)
 
+        # Rotational acceleration
+        self.s.omega_dot = (self.s.moment
+                            - self.s.inertia_dot @ self.s.omega
+                            - np.cross(self.s.omega, self.s.inertia @ self.s.omega)
+                            ).T @ np.linalg.inv(self.s.inertia)

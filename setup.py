@@ -36,7 +36,7 @@ setup(
                       "pandas"],
     packages=find_packages('.', exclude=["test"]),
     package_data={
-        "cw.aero_file": "*.yaml",
+        "cw.aero_file": ["*.yaml"],
     },
     classifiers=[
         'Programming Language :: Python :: 3 :: Only',

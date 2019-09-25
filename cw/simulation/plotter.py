@@ -1,5 +1,6 @@
 import xarray as xr
 import numpy as np
+import quaternion
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from itertools import product
@@ -18,9 +19,10 @@ class Plotter:
     def plot_to_pdf(self, path: Path, result: xr.Dataset, sup_title=None, figsize=(15, 7)):
         with PdfPages(str(path)) as pdf_file:
             for state_name in result:
-                fig = self.default_plotter(result[state_name], sup_title, figsize)
-                pdf_file.savefig(fig)
-                plt.close(fig)
+                figs = self.default_plotter(result[state_name], sup_title, figsize)
+                for fig in figs:
+                    pdf_file.savefig(fig)
+                    plt.close(fig)
 
     def default_plotter(self, data: xr.DataArray, sup_title: Optional[str]=None, figsize=(15, 7)):
         fig = plt.figure(figsize=figsize)
@@ -38,6 +40,16 @@ class Plotter:
                 plt.plot(data_t, data_values[(slice(None), *idx)])
                 legend.append(", ".join(map(str, idx)))
             plt.legend(legend)
+            return fig,
         else:
-            plt.plot(data_t, data_values)
-        return fig
+            if data.dtype == np.quaternion:
+                plt.plot(data_t, quaternion.as_float_array(data_values))
+                plt.legend(["q0", "q1", "q2", "q3"])
+                fig2 = plt.figure(figsize=figsize)
+                plt.title(f"{data.name} (euler)")
+                plt.plot(data_t, quaternion.as_euler_angles(data_values))
+                plt.legend(["x", "y", "z"])
+                return fig, fig2
+            else:
+                plt.plot(data_t, data_values)
+                return fig,
