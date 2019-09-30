@@ -32,6 +32,8 @@ def main():
     with time_it("simulation run"):
         result = simulation.run(10000)
 
+
+
     plotter = Plotter()
     plotter.plot_to_pdf(Path(__file__).parent / "results.i.pdf", result)
 
@@ -84,14 +86,14 @@ class ModuleA(ModuleBase):
 class ModuleB(ModuleBase):
     def __init__(self):
         super().__init__(is_discreet=True,
-                         target_time_step=2)
+                         target_time_step=0.01)
         self.da = 0.1
 
     def initialize(self, simulation):
         super().initialize(simulation)
 
     def step(self):
-        # print("Module B step")
+        print("Module B step", self.s.t)
         a = self.simulation.states.a[0]
         self.s.a = np.array([self.da, 0, 0])
         self.da *= -1

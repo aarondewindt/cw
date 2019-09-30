@@ -2,6 +2,7 @@ from contextlib import contextmanager
 from copy import deepcopy, copy
 from typing import Sequence, List, Set
 from dataclasses import fields, is_dataclass
+from math import remainder
 
 import numpy as np
 
@@ -113,7 +114,7 @@ class Simulation:
         self.states.set_t_y(t, y)
         for module in self.modules:
             if module.is_discreet:
-                if (t % module.target_time_step) < 1e-8:
+                if remainder(t, module.target_time_step) < 1e-8:
                     module.run_step()
             else:
                 module.run_step()
