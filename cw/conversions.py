@@ -248,7 +248,7 @@ def _twoaxisrot(r11, r12, r21, r31, r32):
     return r0, r1, r2 
 
 
-def euler_to_dcm(phi ,theta, psi, rtype = "zyx", unit='rad'):
+def euler_to_dcm(phi, theta, psi, rtype = "zyx", unit='rad'):
     """Converts Euler angles to Direction Cosine Matrix.
     
     Parameters
