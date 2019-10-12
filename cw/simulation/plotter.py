@@ -32,12 +32,14 @@ class Plotter:
         if sup_title:
             plt.suptitle(sup_title)
 
+        line_styles = ["-", "--", ":", "-."]
+
         if np.ndim(data_values) != 1:
             # Shape the the values, the first dimension is time.
             shape = np.shape(data_values)[1:]
             legend = []
             for idx in product(*(range(dim_size) for dim_size in shape)):
-                plt.plot(data_t, data_values[(slice(None), *idx)], "x")
+                plt.plot(data_t, data_values[(slice(None), *idx)], line_styles[idx[0] % 4])
                 legend.append(", ".join(map(str, idx)))
             plt.legend(legend)
             return fig,

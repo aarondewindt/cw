@@ -17,6 +17,7 @@ class BatchConfigurationBase(metaclass=ABCMeta):
         self.name = None  #: Batch name
         self.description = None  #: Batch description.
         self.project = None  #: The name of the project this batch belongs to.
+        self.project_path = None  #: Path to the project root.
 
     @cached_class
     def input_parameters(cls):

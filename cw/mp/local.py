@@ -18,11 +18,20 @@ from cw.mp.batch_configuration_base import BatchConfigurationBase
 # by moving it to the global space before forking the new subprocesses.
 # This is probably not threadsafe. So don't run run_project_locally(...)
 # on multiple threads at the same time.
-batch: BatchConfigurationBase = None
+global_batch: BatchConfigurationBase = None
+global_verbose = False
 
 
-def run_project_locally(project: Project, output_name: str, n_cores: int, dump_interval: int=5, chunksize: int=1):
-    global batch
+def run_project_locally(project: Project,
+                        output_name: str,
+                        n_cores: int,
+                        dump_interval: int=5,
+                        chunksize: int=1,
+                        verbose=False,
+                        ignore_directory_validity=False):
+    global global_batch
+    global global_verbose
+    global_verbose = verbose
 
     # Try to set the multiprocessing start method to 'fork'. This is the
     # the fastest in our case, but it only works on unix systems
@@ -37,14 +46,15 @@ def run_project_locally(project: Project, output_name: str, n_cores: int, dump_i
     intermediate_file_path = project.path / f"{output_name}.int.pickle"
     output_file_path = project.path / f"{output_name}.pickle"
 
-    # Get package configuration object.
+    # Get package batch object.
     batch = project.batch
+    global_batch = batch
 
     # If an intermediate file exists, get the index of the last case that
     # was dumped into the intermediate result file.
     last_idx = None
     if intermediate_file_path.exists():
-        if project.validate_directory():
+        if project.validate_directory() or ignore_directory_validity:
             with intermediate_file_path.open("rb") as f:
                 # Loop to read all blocks in the pickle file stream and keep the last block
                 last_result_block = None
@@ -88,7 +98,8 @@ def run_project_locally(project: Project, output_name: str, n_cores: int, dump_i
         for case_result in tqdm(
                 pool.imap(process_case, cases_iter, chunksize),
                 initial=(last_idx or -1) + 1,
-                total=batch.number_of_cases):
+                total=batch.number_of_cases,
+                disable=verbose):
             result_block.append(case_result)
             if (time.perf_counter() - last_dump_time) >= dump_interval:
                 dump_block(intermediate_file_path, result_block)
@@ -135,9 +146,10 @@ def dump_block(path, block):
 def process_case(case):
     global global_batch
     signal.signal(signal.SIGINT, signal.SIG_IGN)
-    sys.stdout = write_null
+    if not global_verbose:
+        sys.stdout = write_null
     i, case_input, batch = case
-
+    
     batch = batch or global_batch
 
     # Run case

@@ -35,7 +35,7 @@ class Logging:
             field_value = getattr(self.raw_log[0], field_name)
             field_list[0].append("t")
             if not np.isscalar(field_value):
-                field_list[0].extend([f"d{i}" for i in range(np.ndim(field_value))])
+                field_list[0].extend([f"d_{field_value.shape[i]}_{i}" for i in range(np.ndim(field_value))])
 
         # Move all values to the dictionary
         for step_idx, step_data in enumerate(until(self.raw_log, None)):
