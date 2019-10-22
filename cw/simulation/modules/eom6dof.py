@@ -26,7 +26,6 @@ class EOM6DOF(ModuleBase):
                                                   self.s.inertia, self.s.inertia_dot)
 
 
-# @jit((f8[:], f8[:], f8[:], f8[:], f8, f8[:, :], f8[:, :]), nopython=True)
 @jit(nopython=True)
 def step_calc(force, moment, vb, omega_b, mass, inertia, inertia_dot):
     ab = force / mass + np.cross(vb, omega_b)
