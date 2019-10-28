@@ -33,7 +33,7 @@ class VariableMass(ModuleBase):
         # Set initial values.
         simulation.states.mass = self.mass_0
         simulation.states.cg = self.cg_0
-        simulation.states.inertia = self.inertia_0
+        simulation.states.inertia_b = self.inertia_0
 
     def step(self):
         if self.mass_0 >= self.s.mass >= self.mass_1:

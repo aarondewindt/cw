@@ -1,6 +1,6 @@
 import numpy as np
 import quaternion
-from numba import jit, f8
+from numba import jit
 
 from cw.simulation.module_base import ModuleBase
 

@@ -78,9 +78,9 @@ def run_project_locally(project: Project,
     def cases():
         for i, case_input in enumerate(batch.create_cases()):
             if is_start_method_fork:
-                yield i, tuple(case_input), None
+                yield i, tuple(case_input), None, verbose
             else:
-                yield i, tuple(case_input), batch
+                yield i, tuple(case_input), batch, verbose
 
     # Create iterator object from the generator
     cases_iter = iter(cases())
@@ -145,11 +145,13 @@ def dump_block(path, block):
 
 def process_case(case):
     global global_batch
+
+    i, case_input, batch, verbose = case
+
     signal.signal(signal.SIGINT, signal.SIG_IGN)
-    if not global_verbose:
+    if not verbose:
         sys.stdout = write_null
-    i, case_input, batch = case
-    
+
     batch = batch or global_batch
 
     # Run case
