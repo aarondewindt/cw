@@ -14,7 +14,7 @@ class VariableMass(ModuleBase):
                  ):
         super().__init__(required_states=[
             "mass",
-            "inertia", "cg"])
+            "inertia_b", "cg"])
 
         self.mass_0 = mass[0]
         self.mass_1 = mass[1]
@@ -40,6 +40,6 @@ class VariableMass(ModuleBase):
             # Interpolate w.r.t. mass to get the cg and inertia.
             k = (self.s.mass - self.mass_0) / self.d_mass
             self.s.cg = self.cg_0 + self.d_cg * k
-            self.s.inertia = self.inertia_0 + self.d_inertia * k
+            self.s.inertia_b = self.inertia_0 + self.d_inertia * k
         else:
             raise SimulationError("Mass out of range.")

@@ -7,7 +7,7 @@ from cw.simulation.module_base import ModuleBase
 
 class FMAdder(ModuleBase):
     def __init__(self):
-        super().__init__(required_states=["force", "moment"])
+        super().__init__(required_states=["force_b", "moment_b"])
         self.force_states = []
         self.moment_states = []
 
@@ -19,9 +19,9 @@ class FMAdder(ModuleBase):
 
         # Find all input force and moment states
         for field_name in field_names:
-            if field_name.startswith("force_"):
+            if field_name.startswith("force_") and (field_name != "force_b"):
                 self.force_states.append(field_name)
-            elif field_name.startswith("moment_"):
+            elif field_name.startswith("moment_") and (field_name != "moment_b"):
                 self.moment_states.append(field_name)
 
     def step(self):
@@ -34,6 +34,6 @@ class FMAdder(ModuleBase):
         for moment_name in self.moment_states:
             total_moment += self.s.__dict__[moment_name]
 
-        self.s.force = total_force
-        self.s.moment = total_moment
+        self.s.force_b = total_force
+        self.s.moment_b = total_moment
 

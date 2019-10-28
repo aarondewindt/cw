@@ -29,10 +29,10 @@ class TestEOM6DOF(unittest.TestCase):
         self.simulation.initialize()
         result = self.simulation.run(3)
 
-        force_sum = result.force_0 + result.force_1 + result.force_2 - result.force
+        force_sum = result.force_0 + result.force_1 + result.force_2 - result.force_b
         self.assertTrue(np.all(np.isclose(force_sum.values, 0.0)))
 
-        moment_sum = result.moment_0 + result.moment_1 + result.moment_2 - result.moment
+        moment_sum = result.moment_0 + result.moment_1 + result.moment_2 - result.moment_b
         self.assertTrue(np.all(np.isclose(moment_sum.values, 0.0)))
 
 
@@ -43,8 +43,8 @@ zero_array = np.zeros(1)
 class FMAdderStates(StatesBase):
     t: float = 0
     
-    force: np.ndarray = np.zeros(3)
-    moment: np.ndarray = np.zeros(3)
+    force_b: np.ndarray = np.zeros(3)
+    moment_b: np.ndarray = np.zeros(3)
 
     force_0: np.ndarray = np.zeros(3)
     moment_0: np.ndarray = np.zeros(3)

@@ -8,9 +8,21 @@ from cw.simulation.module_base import ModuleBase
 class EOM6DOF(ModuleBase):
     def __init__(self):
         super().__init__(required_states=[
-            "force", "moment", "mass", "inertia", "inertia_dot",
-            "ab", "vb", "ve", "xe",
-            "omega_dot_b", "omega_b", "q"])
+            # Inputs
+            "force_b",
+            "moment_b",
+            "mass",
+            "inertia_b",
+            "inertia_dot_b",
+
+            # Outputs
+            "aii",  #: Inertial acceleration in the inertial reference frame.
+            "aib",  #: Inertial acceleration in the body reference frame.
+            "vii",  #: Inertial velocity in the inertial reference frame.
+            "xi",  # Position in the inertial reference frame.
+            "omega_dot_b",  #: Angular acceleration in the body reference frame.
+            "omega_b",  #: Angular velocity
+            "q"])  #: Unit quaternion.
 
     def step(self):
         # Acceleration
@@ -22,20 +34,23 @@ class EOM6DOF(ModuleBase):
         #                       - np.cross(self.s.omega_b, self.s.inertia @ self.s.omega_b)
         #                       ).T @ np.linalg.inv(self.s.inertia)
 
-        self.s.ab, self.s.omega_dot_b = step_calc(self.s.force, self.s.moment, self.s.vb, self.s.omega_b, self.s.mass,
-                                                  self.s.inertia, self.s.inertia_dot)
+        self.s.aii, self.s.aib, self.s.omega_dot_b = step_calc(
+            self.s.force_b, self.s.moment_b, self.s.omega_b, self.s.mass,
+            self.s.inertia_b, self.s.inertia_dot_b, self.s.dcm_ib)
 
 
 @jit(nopython=True)
-def step_calc(force, moment, vb, omega_b, mass, inertia, inertia_dot):
-    ab = force / mass + np.cross(vb, omega_b)
+def step_calc(force_b, moment, omega_b, mass, inertia, inertia_dot, dcm_ib):
+    force_i = dcm_ib @ force_b
+    aii = force_i / mass
+    aib = force_b / mass
 
     omega_dot_b = (moment
                    - inertia_dot @ omega_b
                    - np.cross(omega_b, inertia @ omega_b)
                    ).T @ np.linalg.inv(inertia)
 
-    return ab, omega_dot_b
+    return aii, aib, omega_dot_b
 
 
 def omega_to_q_dot(omega, quat, k=1.0):

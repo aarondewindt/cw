@@ -43,7 +43,7 @@ class VariableMassStates(StatesBase):
     mass: float = np.nan
     mass_dot: float = 0
     cg: np.ndarray = np.zeros(3)
-    inertia: np.ndarray = np.zeros((3, 3))
+    inertia_b: np.ndarray = np.zeros((3, 3))
 
     def get_y_dot(self):
         return self.mass_dot

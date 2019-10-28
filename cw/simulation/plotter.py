@@ -12,17 +12,26 @@ class Plotter:
     def __init__(self):
         pass
 
-    def plot(self, result: xr.Dataset, sup_title=None, figsize=(15, 7)):
-        for state_name in result:
-            self.default_plotter(result[state_name], sup_title, figsize)
+    def plot(self, result: xr.Dataset, sup_title=None, figsize=(15, 7), states=None):
+        if states is None:
+            states = result.data_vars
 
-    def plot_to_pdf(self, path: Path, result: xr.Dataset, sup_title=None, figsize=(15, 7)):
+        for state_name in states:
+            if state_name in result:
+                self.default_plotter(result[state_name], sup_title, figsize)
+
+    def plot_to_pdf(self, path: Path, result: xr.Dataset, sup_title=None, figsize=(15, 7), states=None):
+        if states is None:
+            states = result.data_vars
         with PdfPages(str(path)) as pdf_file:
-            for state_name in result:
-                figs = self.default_plotter(result[state_name], sup_title, figsize)
-                for fig in figs:
-                    pdf_file.savefig(fig)
-                    plt.close(fig)
+            for state_name in states:
+                if state_name in result:
+                    figs = self.default_plotter(result[state_name], sup_title, figsize)
+                    for fig in figs:
+                        pdf_file.savefig(fig)
+                        plt.close(fig)
+
+        print(f"Results plot saved at: {path.absolute()}")
 
     def default_plotter(self, data: xr.DataArray, sup_title: Optional[str]=None, figsize=(15, 7)):
         fig = plt.figure(figsize=figsize)
