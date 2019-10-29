@@ -110,11 +110,9 @@ class Simulation:
         for module in self.discrete_modules:
             module.run_step()
 
-    # def step_all_modules(self, t, y):
-    #     self.states.set_t_y(t, y)
-    #     for module in self.modules:
-    #         if module.is_discreet:
-    #             if fmod(t, module.target_time_step) < 1e-10:
-    #                 module.run_step()
-    #         else:
-    #             module.run_step()
+    def find_modules_by_type(self, klass):
+        result = []
+        for module in self.modules:
+            if isinstance(module, klass):
+                result.append(module)
+        return result
