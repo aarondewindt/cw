@@ -2,6 +2,7 @@ from typing import Optional, Callable, Deque, Tuple, Union
 import numpy as np
 from collections import deque
 from math import remainder, fmod
+import traceback
 
 from cw.simulation.integrator_base import IntegratorBase
 from cw.simulation.exception import SimulationError
@@ -29,21 +30,26 @@ class AB3Integrator(IntegratorBase):
         self.simulation = simulation
 
     def run(self, n_steps: int):
-        for module in self.simulation.discrete_modules:
-            if not (remainder(module.target_time_step, self.h) < 1e-8):
-                raise SimulationError(f"Discreet module '{module.__class__.__name__}' "
-                                      f"target time step is not an integer multiple of the integrator time step.")
-            else:
-                module.clock_divider = round(module.target_time_step / self.h)
+        try:
+            for module in self.simulation.discrete_modules:
+                if not (remainder(module.target_time_step, self.h) < 1e-8):
+                    raise SimulationError(f"Discreet module '{module.__class__.__name__}' "
+                                          f"target time step is not an integer multiple of the integrator time step.")
+                else:
+                    module.clock_divider = round(module.target_time_step / self.h)
 
-        self.simulation.logging.reset(n_steps)
-        t0 = self.simulation.states.t
-        self.must_differentiate = self.simulation.states.get_differentiation_y() is not None
-        self.previous_step_t1 = self.simulation.states.t
-        self.previous_step_y1 = self.simulation.states.get_y()
-        for step_idx in range(n_steps):
-            t = t0 + (step_idx + 1) * self.h
-            self.run_single_step(step_idx, t)
+            self.simulation.logging.reset(n_steps)
+            t0 = self.simulation.states.t
+            self.must_differentiate = self.simulation.states.get_differentiation_y() is not None
+            self.previous_step_t1 = self.simulation.states.t
+            self.previous_step_y1 = self.simulation.states.get_y()
+            for step_idx in range(n_steps):
+                t = t0 + (step_idx + 1) * self.h
+                self.run_single_step(step_idx, t)
+        except:
+            raise
+            traceback.print_exc()
+
         return self.simulation.logging.finish()
 
     def run_single_step(self, step_idx: int, t1: float):
