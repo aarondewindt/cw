@@ -23,6 +23,7 @@ setup(
                       'python-dateutil',
                       'cerberus',
                       'pyserial',
+                      'pyserial-asyncio',
                       'tqdm',
                       "openpyxl",
                       "psutil",
