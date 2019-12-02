@@ -1,5 +1,7 @@
 from io import BytesIO
 from enum import Enum
+from collections import defaultdict
+from typing import DefaultDict, List, Union
 import serial_asyncio
 import asyncio
 
@@ -12,39 +14,138 @@ class RxState(Enum):
 
 
 class LBPAsyncDevice:
-    def __init__(self, url, baudrate=38400):
+    def __init__(self, url, baudrate=38400, assume_reply_equals_command=False, loop=None):
         self.url = url
         self.baudrate = baudrate
         self.reader = None
         self.writer = None
-        self.package_queue = None
+        self.loop = loop or asyncio.get_event_loop()
+        self.assume_reply_equals_command = assume_reply_equals_command
+        self.package_queue: asyncio.Queue = None
+        self.sequence_queue: asyncio.Queue = None
+        self.awaiting_replies: List[Union[asyncio.Future, None]] = [None, None, None, None]
 
     async def start(self):
+        """
+        Open the serial connection and listen for incoming packages.
+        """
         self.reader, self.writer = await serial_asyncio.open_serial_connection(url=self.url, baudrate=self.baudrate)
         self.package_queue = asyncio.Queue()
-        asyncio.create_task(self.reader_coro())
+        self.sequence_queue = asyncio.Queue()
+        for i in range(4):
+            self.sequence_queue.put_nowait(i)
+        self.loop.create_task(self.reader_coro())
+
+    def close(self):
+        self.writer.transport.close()
 
     async def reader_coro(self):
+        """
+        Coroutine listening for packages. Replies will unblock their corresponding command
+        transmit call and the rest of the packages will be places in the queue.
+        """
         lbp = LBPPacket()
         while True:
+            # Wait for one byte to arrive.
             byte = (await self.reader.readexactly(1))[0]
+
+            # Process the byte.
             done = lbp.parse_byte(byte)
+
+            # Process the package if a full package has been received.
             if done:
+                # If this is a reply package, check if we are waiting for a reply from
+                # this (command, sequence) combination. If so, set the future result
+                # and continue the loop.
+                if lbp.flags == Comms.FLAGS_REPLY:
+                    if self.awaiting_replies[lbp.sequence] is not None:
+                        future = self.awaiting_replies[lbp.sequence]
+                        self.awaiting_replies[lbp.sequence] = None
+                        try:
+                            future.set_result(lbp)
+                        except asyncio.InvalidStateError:
+                            pass
+                        lbp = LBPPacket()
+                        continue
+
+                # Put the package in the queue, if it wasn't an awaiting reply.
                 await self.package_queue.put(lbp)
+
+                # Initialize new a package.
                 lbp = LBPPacket()
 
     async def transmit(self,
-                       command,
-                       destination,
-                       source,
-                       flags,
-                       sequence,
-                       data):
-        lbp = LBPPacket(command, destination, source, flags, sequence, data)
-        self.writer.write(lbp.serialize())
+                       command=None,
+                       destination=None,
+                       source=None,
+                       flags=None,
+                       sequence=None,
+                       data=None,
+                       force_asynchronous=None):
+        """
+        Create and transmit an LBP package. If the package has a COMMAND flag, the package will be send
+        synchronously. This means, the package sequence will be set, the package will be transmitted
+        and this function will await until a reply with the same sequence number has been received.
+        The coroutine will the return the reply package. If it's an asynchronous or reply package, the
+        coroutine will await until the package has been transmitted and return None.
 
-    async def transmit_package(self, package):
+        :param command: Command code.
+        :param destination: Destination address.
+        :param source: Source address
+        :param flags: Package flag.
+        :param sequence: Package sequence.
+        :param data: Package payload data.
+        :param force_asynchronous: If True, command packages will be send asynchronously.
+        :return: Reply package if the transmitted package was a command package, otherwise None.
+        """
+        # Create package
+        package = LBPPacket(command, destination, source, flags, sequence, data)
+
+        # Transmit, wait and return the reply if synchronous.
+        return await self.transmit_package(package, force_asynchronous)
+
+    async def transmit_package(self, package: 'LBPPacket', force_asynchronous: bool=False):
+        """
+        Transmits an LBP package. If the package has a COMMAND flag, the package will be send synchronously.
+        This means, the package sequence will be set, the package will be transmitted and this function
+        will await until a reply with the same sequence number has been received. The coroutine will the
+        return the reply package. If it's an asynchronous or reply package, the coroutine will await until
+        the package has been transmitted and return None.
+
+        :param package: Package to transmit
+        :param force_asynchronous: If True, command packages will be send asynchronously.
+
+        :return: Reply package if the transmitted package was a command package, otherwise None.
+        """
+        is_synchronous = (package.flags == Comms.FLAGS_COMMAND) and (not force_asynchronous)
+
+        if is_synchronous:
+            # Wait for an available sequence for the command.
+            sequence = await self.sequence_queue.get()
+
+            # Set the package sequence.
+            package.sequence = sequence
+
+            # Create the future object used to wait for the reply.
+            self.awaiting_replies[sequence] = asyncio.Future()
+
+        # Transmit package.
         self.writer.write(package.serialize())
+
+        if is_synchronous:
+            # Wait for the reply.
+            future = self.awaiting_replies[sequence]
+            await future
+
+            # Get the reply package.
+            reply_package = future.result()
+
+            # Clear the future and add the sequence back to the queue.
+            self.awaiting_replies[sequence] = None
+            await self.sequence_queue.put(sequence)
+
+            # Return the reply.
+            return reply_package
 
 
 class LBPPacket:
@@ -248,23 +349,58 @@ def crc8(b, crc):
     return crc
 
 
+def lbp_listener(url, baudrate=38400, assume_reply_equals_command=False):
+    """
+    Listens and prints incoming lbp packages. Used
+
+    :return:
+    """
+
+    async def listener():
+        device = LBPAsyncDevice(url, baudrate, assume_reply_equals_command)
+        await device.start()
+        print(f"Listening for packages from '{url}' ({baudrate}).")
+
+        while True:
+            package = await device.package_queue.get()
+            print(package)
+            if package.flags == Comms.FLAGS_COMMAND:
+                source = package.source
+                package.source = package.destination
+                package.destination = source
+                package.flags = Comms.FLAGS_REPLY
+                await device.transmit_package(package)
+
+    asyncio.run(listener())
+
+
 if __name__ == '__main__':
-    lbp = LBPPacket(source=0x10,
-                    destination=0x24,
-                    flags=Comms.FLAGS_COMMAND,
-                    sequence=0x00,
-                    command=Comms.COMMAND_IDENTIFY,
-                    data=b"")
+    # lbp_listener("/tmp/lbp_port_b")
+    lbp = LBPPacket(source=0x24, destination=0x20)
     done = False
 
-    # for i, byte in enumerate(b'\x55\x62\x24\x07\x00\x53\x74\x61\x74\x65\x5f\x30\x07\x5a'):
-    #     done = lbp.parse_byte(byte)
-    #     if done:
-    #         break
+    byts = bytes([
+        85,
+        127,
+        63,
+        133,
+        97,
+        98,
+        99,
+        100,
+        191,
+        90,
+    ])
+
+    print(byts)
+
+    print(byts[1])
+
+    for i, byte in enumerate(byts): #b'U\x7f?\x85abcd\xbfZ'):
+        done = lbp.parse_byte(byte)
+        if done:
+            break
 
     print(lbp)
-    print(len(lbp.serialize()))
-
-    for byte in lbp.serialize():
-        print(byte, end=", ")
-        # print(f"{byte:X}", end=" ")
+    print(lbp.sequence)
+    print(lbp.serialize())
