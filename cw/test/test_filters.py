@@ -51,12 +51,12 @@ class TestFilters(unittest.TestCase):
             r=[[5.]]
         )
 
-        print(data)
-
-        plt.figure(3)
-        data.x1.to_series().plot()
-        data.x1_est.to_series().plot()
-        plt.show()
+        # print(data)
+        #
+        # plt.figure(3)
+        # data.x1.to_series().plot()
+        # data.x1_est.to_series().plot()
+        # plt.show()
 
         for x_name in iekf.x_names:
             x_mse = ((data[x_name].values - data[f"{x_name}_est"].values)**2).mean()
@@ -240,17 +240,17 @@ class TestFilters(unittest.TestCase):
             r=[[1.]]
         )
 
-        print(data)
-
-        plt.figure(3)
-        data.x1.to_series().plot()
-        data.x1_est.to_series().plot()
-        data.x2.to_series().plot()
-        data.x2_est.to_series().plot()
-
-        plt.figure(4)
-        data.iekf_i_count.to_series().plot()
-        plt.show()
+        # print(data)
+        #
+        # plt.figure(3)
+        # data.x1.to_series().plot()
+        # data.x1_est.to_series().plot()
+        # data.x2.to_series().plot()
+        # data.x2_est.to_series().plot()
+        #
+        # plt.figure(4)
+        # data.iekf_i_count.to_series().plot()
+        # plt.show()
 
         # for x_name in iekf.x_names:
         #     x_mse = ((data[x_name].values - data[f"{x_name}_est"].values)**2).mean()
@@ -275,8 +275,8 @@ class TestFilters(unittest.TestCase):
             max_iterations=100,
             eps=1e-10,
         )
-        print(iekf)
-        iekf.print_latex()
+        # print(iekf)
+        # iekf.print_latex()
 
         # Create input signal.
         t = np.arange(0, 10, 0.01)
@@ -322,29 +322,29 @@ class TestFilters(unittest.TestCase):
         #
         # plt.tight_layout()
 
-        plt.figure(figsize=(10, 6))
-        plt.subplot(311)
-        plt.title("IEKF unit-test inputs")
-        data.u1.to_series().plot(label="$u_1$")
-        data.u2.to_series().plot(label="$u_2$", style="--")
-        plt.legend(loc=5)
-        plt.subplot(312)
-        plt.title("IEKF unit-test measurement")
-        data.z1.to_series().plot(label="$z_1$")
-        # plt.legend()
-        plt.ylabel("$z_1$")
-        plt.subplot(313)
-        plt.title("IEKF unit-test result")
-        data.x1.to_series().plot(label="$x_1$", linewidth=0.75)
-        data.x1_est.to_series().plot(label="$x_{1_{estimate}}$", style="--")
-        data.x2.to_series().plot(label="$x_2$", linewidth=2.0)
-        data.x2_est.to_series().plot(label="$x_{2_{estimate}}$", style=":")
-        plt.legend(loc=5)
-        plt.tight_layout()
+        # plt.figure(figsize=(10, 6))
+        # plt.subplot(311)
+        # plt.title("IEKF unit-test inputs")
+        # data.u1.to_series().plot(label="$u_1$")
+        # data.u2.to_series().plot(label="$u_2$", style="--")
+        # plt.legend(loc=5)
+        # plt.subplot(312)
+        # plt.title("IEKF unit-test measurement")
+        # data.z1.to_series().plot(label="$z_1$")
+        # # plt.legend()
+        # plt.ylabel("$z_1$")
+        # plt.subplot(313)
+        # plt.title("IEKF unit-test result")
+        # data.x1.to_series().plot(label="$x_1$", linewidth=0.75)
+        # data.x1_est.to_series().plot(label="$x_{1_{estimate}}$", style="--")
+        # data.x2.to_series().plot(label="$x_2$", linewidth=2.0)
+        # data.x2_est.to_series().plot(label="$x_{2_{estimate}}$", style=":")
+        # plt.legend(loc=5)
+        # plt.tight_layout()
 
         # plt.figure(4)
         # data.iekf_i_count.to_series().plot()
-        plt.show()
+        # plt.show()
 
         # for x_name in iekf.x_names:
         #     x_mse = ((data[x_name].values - data[f"{x_name}_est"].values)**2).mean()

@@ -3,16 +3,23 @@
 # socat -d -d -v pty,rawer,echo=0,link=/tmp/lbp_port_a pty,rawer,echo=0,link=/tmp/lbp_port_b
 
 from typing import Tuple
+from pathlib import Path
 import asyncio
-
+import sys
 import unittest
 
 from cw.lbp import LBPPacket, LBPAsyncDevice, Comms
 from cw.async_test import async_test
 
 
-port_a_url = "/tmp/lbp_port_a"
-port_b_url = "/tmp/lbp_port_b"
+if sys.platform == "linux":
+    port_a_url = Path("/tmp/lbp_port_a")
+    port_b_url = Path("/tmp/lbp_port_b")
+    virtual_ports_exist = port_a_url.exists() and port_b_url.exists()
+else:
+    port_a_url = None
+    port_b_url = None
+    virtual_ports_exist = False
 
 
 class TestLBP(unittest.TestCase):
@@ -25,6 +32,7 @@ class TestLBP(unittest.TestCase):
 
         return device_a, device_b
 
+    @unittest.skipUnless(virtual_ports_exist, "Virtual serial port pair required.")
     @async_test()
     async def test_asynchronous_device_transfer(self):
         device_a, device_b = await self.create_devices()
@@ -49,6 +57,7 @@ class TestLBP(unittest.TestCase):
         device_a.close()
         device_b.close()
 
+    @unittest.skipUnless(virtual_ports_exist, "Virtual serial port pair required.")
     @async_test()
     async def test_synchronous_device_transfer(self):
         device_a, device_b = await self.create_devices()

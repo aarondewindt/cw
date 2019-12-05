@@ -321,9 +321,9 @@ class TestAeroFile(unittest.TestCase):
             output_dimensions=3,
         )
 
-        print("")
-        # print(code)
-        code_print(code)
+        # print("")
+        # # print(code)
+        # code_print(code)
 
     def test_forces_moments_coefficients(self):
         aero_file = AeroFile(test_path / "data_files" / "3d_aero.aero")
@@ -334,8 +334,8 @@ class TestAeroFile(unittest.TestCase):
         for alpha in alphas:
             c_fs.append(aero_file.calc_forces_moments_coefficients(alpha=alpha, output_dimensions=3)[0])
 
-        plt.plot(alphas, np.squeeze(c_fs))
-        plt.show()
+        # plt.plot(alphas, np.squeeze(c_fs))
+        # plt.show()
 
     def test_setup_aerodynamic_forces_moments_calculation_parachute_1d(self):
         aero_file = AeroFile(test_path / "data_files" / "aero_para_simple.yaml")

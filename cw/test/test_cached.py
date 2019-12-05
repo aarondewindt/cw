@@ -1,5 +1,5 @@
 import unittest
-from time import sleep, perf_counter as clock
+from time import sleep, time as clock
 
 from cw.cached import cached, cached_class
 
