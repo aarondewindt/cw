@@ -6,12 +6,13 @@ from abc import ABCMeta
 
 class Singleton(metaclass=ABCMeta):
     """
-    Base class for all singleton objects.
+    Base class for all singleton objects. These are object of which only 
+    one instance of its type may exist at a time.
     """
     instance = None
 
     def __new__(cls, *args, **kwargs):
-        """Returns existing instance of RequiredType if it exists already, otherwise it creates it."""
+        """Returns existing instance of the derived if it exists already, otherwise it creates it."""
         if cls.instance is None:
             cls.instance = super().__new__(cls)
         return cls.instance
