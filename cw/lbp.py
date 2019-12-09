@@ -15,7 +15,7 @@ class RxState(Enum):
 
 class LBPAsyncDevice:
     def __init__(self, url: Union[Path, str], baudrate=38400, assume_reply_equals_command=False, loop=None):
-        self.url = str(url.absolute())
+        self.url = str(url)
         self.baudrate = baudrate
         self.reader = None
         self.writer = None
@@ -71,12 +71,25 @@ class LBPAsyncDevice:
                             pass
                         package = LBPPacket()
                         continue
+                
+                # Index of the awaiting_package we received.
+                received_awaiting_package_idx = None
 
-                for future, commands in self.awaiting_packages:
+                # Loop through the list of awaiting packages and check if someone
+                # is waiting for a package.
+                for i, (future, commands) in enumerate(self.awaiting_packages):
                     if package.command in commands:
-                        future.set_result(package)
-                        package = LBPPacket()
-                        continue
+                        received_awaiting_package_idx = i
+                        break
+
+                # If the package is one we've been waiting for.
+                # Remove its entry from the list.
+                # Set the package as the future result.
+                if received_awaiting_package_idx is not None:
+                    future, commands = self.awaiting_packages.pop(received_awaiting_package_idx)
+                    future.set_result(package)
+                    package = LBPPacket()
+                    continue
 
                 # Put the package in the queue, if it wasn't an awaiting reply or package.
                 await self.package_queue.put(package)
@@ -99,11 +112,18 @@ class LBPAsyncDevice:
             # be accessed directly. However after reviewing the source code of
             # the asyncio.Queue class, it is safe to read and write the _queue
             # as long as we don't await within the loop.
-            for package in self.package_queue._queue:
+            package_idx = None
+            for i, package in enumerate(self.package_queue._queue):
                 # If a package has been found with one of the target commands
                 # return it.
                 if package.command in commands:
-                    return package
+                    package_idx = i
+                    break
+
+            if package_idx is not None:
+                package = self.package_queue._queue[package_idx]
+                self.package_queue._queue.remove(package)
+                return package
 
         # Create future that will wait for the package.
         future = asyncio.Future()
