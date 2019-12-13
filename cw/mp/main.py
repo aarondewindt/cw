@@ -39,6 +39,7 @@ class MPCLI(CLIBase):
                                 help="Seconds between dumps to the intermediate results file. (default=5)")
         run_parser.add_argument("--chunksize", "-s", type=int, default=1,
                                 help="Number of cases to give each processes per time. (default=1)")
+        run_parser.add_argument("--verbose", "-v", action="store_true", help="Suppresses stdout if not present.")
         run_parser.set_defaults(func=cls.run)
 
         clear_parser = mp_subparsers.add_parser("clear",
@@ -111,5 +112,5 @@ class MPCLI(CLIBase):
                 except:
                     pass
 
-            output_name = args.output_name or project.batch.name
-            run_project_locally(project, output_name, n_cores, args.dump_interval, args.chunksize)
+            output_name = args.output_name or f"{project.batch.name}.i"
+            run_project_locally(project, output_name, n_cores, args.dump_interval, args.chunksize, args.verbose)

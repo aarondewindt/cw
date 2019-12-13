@@ -116,7 +116,7 @@ class IteratedExtendedKalmanFilter:
 
         # Get time vector
         time_vector = u.t.values
-        u_log = np.vstack(u[u_name] for u_name in self.u_names).T if len(self.u) else [[]] * len(time_vector)
+        u_log = np.vstack([u[u_name] for u_name in self.u_names]).T if len(self.u) else [[]] * len(time_vector)
         u_f_iter = iter(u_log)
         next(u_f_iter)
         n_x = len(self.x)
@@ -158,7 +158,7 @@ class IteratedExtendedKalmanFilter:
                 **{self.x_names[x_idx]: (('t',), x_log[:, x_idx]) for x_idx in range(n_x)},
                 **{self.z_names[z_idx]: (('t',), z_log[:, z_idx]) for z_idx in range(n_z)},
             }
-        ), inplace=True)
+        ))
 
     def filter(self,
                data: xr.Dataset,
@@ -288,7 +288,7 @@ class IteratedExtendedKalmanFilter:
                 'iekf_i_count': (("t",), np.array(iter_count)),
                 # "stdx": (('t', "dim_0"), np.array(stdx_log))
             }
-        ), inplace=True)
+        ))
 
 
 def c2d(a: np.ndarray, b: np.ndarray, dt: float) -> Tuple[np.ndarray, np.ndarray]:

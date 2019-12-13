@@ -172,7 +172,9 @@ class Project:
                              "Missing batch configuration.")
 
         # Return an instance of the klass.
-        return klass()
+        batch = klass()
+        batch.project_path = self.path
+        return batch
 
     @cached
     def directory_checksum_validator(self) -> DirectoryChecksum:

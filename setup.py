@@ -23,6 +23,7 @@ setup(
                       'python-dateutil',
                       'cerberus',
                       'pyserial',
+                      'pyserial-asyncio',
                       'tqdm',
                       "openpyxl",
                       "psutil",
@@ -33,10 +34,11 @@ setup(
                       "sympy",
                       "control",
                       "msgpack_numpy",
-                      "pandas"],
+                      "pandas",
+                      "numba>=0.46.0"],
     packages=find_packages('.', exclude=["test"]),
     package_data={
-        "cw.aero_file": "*.yaml",
+        "cw.aero_file": ["*.yaml"],
     },
     classifiers=[
         'Programming Language :: Python :: 3 :: Only',
