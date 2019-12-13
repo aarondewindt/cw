@@ -140,7 +140,9 @@ def flex_load(file_path: Union[str, os.PathLike, PurePath],
 def flex_dump(obj: Any,
               file_path: Union[str, os.PathLike, PurePath],
               default_serializer=None,
-              default_is_gzipped=False):
+              default_is_gzipped=False,
+              *args,
+              **kwargs):
     """
     Dumps object hierarchies to a file. The serialization and compression is chosen based on the file extension.
 
@@ -157,7 +159,7 @@ def flex_dump(obj: Any,
         default_is_gzipped
     )
     # print(serializer, file_path.suffixes, is_gzipped, is_binary)
-    raw_data = serializer.dumps(obj)
+    raw_data = serializer.dumps(obj, *args, **kwargs)
 
     if is_gzipped:
         raw_data = bytes(raw_data, "utf8") if isinstance(raw_data, str) else raw_data
