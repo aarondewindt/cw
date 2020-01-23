@@ -35,7 +35,8 @@ setup(
                       "control",
                       "msgpack_numpy",
                       "pandas",
-                      "numba>=0.46.0"],
+                      "numba>=0.46.0",
+                      "numpy-quaternion"],
     packages=find_packages('.', exclude=["test"]),
     package_data={
         "cw.aero_file": ["*.yaml"],

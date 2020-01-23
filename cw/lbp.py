@@ -1,6 +1,6 @@
 from io import BytesIO
 from enum import Enum
-from typing import List, Union, Tuple
+from typing import List, Union, Tuple, Sequence
 from pathlib import Path
 import serial_asyncio
 import asyncio
@@ -97,7 +97,7 @@ class LBPAsyncDevice:
                 # Initialize new a package.
                 package = LBPPacket()
 
-    async def wait_for_package(self, commands: List[int], check_queue=True) -> 'LBPPacket':
+    async def wait_for_package(self, commands: Sequence[int], check_queue=True) -> 'LBPPacket':
         """
         Waits until a package with one of the given commands has arrived.
 
@@ -490,7 +490,7 @@ def crc8(b, crc):
 def lbp_listener(url, baudrate=38400, assume_reply_equals_command=False):
     """
     Listens for incoming packages and print them out on the consoles.
-    A reply is automatically send if the received package is a
+    An empty reply is automatically send if the received package is a
     command package.
 
     ..note: This function is for testing purposes and not meant to be used
