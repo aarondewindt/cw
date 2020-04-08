@@ -28,10 +28,16 @@ def run_project_locally(project: Project,
                         dump_interval: int=5,
                         chunksize: int=1,
                         verbose=False,
-                        ignore_directory_validity=False):
+                        ignore_directory_validity=False,
+                        progress_bar=None):
     global global_batch
     global global_verbose
     global_verbose = verbose
+
+    if progress_bar is None:
+        progress_bar = verbose
+    else:
+        progress_bar = not progress_bar
 
     # Try to set the multiprocessing start method to 'fork'. This is the
     # the fastest in our case, but it only works on unix systems
@@ -99,7 +105,7 @@ def run_project_locally(project: Project,
                 pool.imap(process_case, cases_iter, chunksize),
                 initial=(last_idx or -1) + 1,
                 total=batch.number_of_cases,
-                disable=verbose):
+                disable=progress_bar):
             result_block.append(case_result)
             if (time.perf_counter() - last_dump_time) >= dump_interval:
                 dump_block(intermediate_file_path, result_block)

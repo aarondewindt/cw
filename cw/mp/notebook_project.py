@@ -72,10 +72,11 @@ class NotebookProject(BatchConfigurationBase):
                     output_name: Optional[str] = None,
                     dump_interval: int = 5,
                     chunksize: int = 1,
-                    verbose=False):
+                    verbose=False,
+                    progress_bar=True):
         n_cores = int(n_cores or 0)
         max_cores = multiprocessing.cpu_count()
         n_cores = max_cores if (n_cores >= max_cores) or (n_cores < 0) else n_cores
 
         output_name = output_name or f"{self.batch_name}.i"
-        return run_project_locally(self, output_name, n_cores, dump_interval, chunksize, verbose)
+        return run_project_locally(self, output_name, n_cores, dump_interval, chunksize, verbose, False, progress_bar)
