@@ -2,18 +2,31 @@ from itertools import zip_longest
 from typing import Iterable, Any, TypeVar, Sequence
 from cw.singletons import Singleton
 from functools import partial
+from collections.abc import Iterable as IterableType
 
 
 T = TypeVar('T')
-
-# def zip_
-
 
 class EndItemType(Singleton):
     name = "EndItem"
 
 
 EndItem = EndItemType()
+
+
+def iterify(obj):
+    """
+    Yields the object if it's not an iterable. If it's an iterable it yield the
+    elements of the iterable. Strings and byte strings are handles as scalar elements.
+
+    :param obj: Object to iterify.
+    """
+    if isinstance(obj, (str, bytes)):
+        yield obj
+    elif isinstance(obj, IterableType):
+        yield from obj
+    else:
+        yield obj
 
 
 def grouper(iterable: Iterable[T], n: int, fillvalue: Any=None) -> Iterable[Sequence[T]]:

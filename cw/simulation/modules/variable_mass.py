@@ -1,4 +1,5 @@
 from typing import Tuple, Sequence
+from math import isclose
 
 import numpy as np
 
@@ -28,6 +29,8 @@ class VariableMass(ModuleBase):
         self.d_cg = self.cg_1 - self.cg_0
         self.d_inertia = self.inertia_1 - self.inertia_0
 
+        self.is_mass_constant = isclose(self.d_mass, 0.0, abs_tol=1e-8)
+
     def initialize(self, simulation):
         super().initialize(simulation)
         # Set initial values.
@@ -36,10 +39,14 @@ class VariableMass(ModuleBase):
         simulation.states.inertia_b = self.inertia_0
 
     def step(self):
-        if self.mass_0 >= self.s.mass >= self.mass_1:
-            # Interpolate w.r.t. mass to get the cg and inertia.
-            k = (self.s.mass - self.mass_0) / self.d_mass
-            self.s.cg = self.cg_0 + self.d_cg * k
-            self.s.inertia_b = self.inertia_0 + self.d_inertia * k
+        if self.is_mass_constant:
+            self.s.cg = self.cg_0
+            self.s.inertia_b = self.inertia_0
         else:
-            raise SimulationError("Mass out of range.")
+            if self.mass_0 >= self.s.mass >= self.mass_1:
+                # Interpolate w.r.t. mass to get the cg and inertia.
+                k = (self.s.mass - self.mass_0) / self.d_mass
+                self.s.cg = self.cg_0 + self.d_cg * k
+                self.s.inertia_b = self.inertia_0 + self.d_inertia * k
+            else:
+                raise SimulationError("Mass out of range.")

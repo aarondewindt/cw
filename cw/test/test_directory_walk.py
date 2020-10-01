@@ -22,7 +22,8 @@ class TestDirectoryWalk(unittest.TestCase):
 
         # Walk through the directory and keep a list with the names of all files.
         file_names = []
-        for file_path in directory_walk(abs_path("./data_files/test_hash_directory")):
+        for file_path in directory_walk(abs_path("./data_files/test_hash_directory"),
+                                        filter=lambda path: path.suffix not in ['.pyc']):
             file_names.append(file_path.name)
 
         correct_file_names = [
