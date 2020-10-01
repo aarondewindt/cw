@@ -66,7 +66,7 @@ class IteratedExtendedKalmanFilter:
         self.hx_func: Callable = sp.lambdify(self.txu, self.hx)
 
     def __str__(self):
-        return f"ExtendedKalmanFilter:\n" + indent(
+        return f"IteratedExtendedKalmanFilter:\n" + indent(
             f"x:\n{indent(sp.pretty(self.x, wrap_line=False), '  ')}\n"
             f"z:\n{indent(sp.pretty(self.z, wrap_line=False), '  ')}\n"
             f"u:\n{indent(sp.pretty(self.u, wrap_line=False), '  ')}\n"
