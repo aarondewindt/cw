@@ -14,7 +14,7 @@ class RxState(Enum):
 
 
 class LBPAsyncDevice:
-    def __init__(self, url: Union[Path, str], baudrate=38400, assume_reply_equals_command=False, loop=None):
+    def __init__(self, url: Union[Path, str], baudrate=38400, assume_reply_equals_command=False, loop=None, **kwargs):
         self.url = str(url)
         self.baudrate = baudrate
         self.reader = None
@@ -25,12 +25,15 @@ class LBPAsyncDevice:
         self.sequence_queue: Union[asyncio.Queue, None] = None
         self.awaiting_replies: List[Union[asyncio.Future, None]] = [None, None, None, None]
         self.awaiting_packages: List[Tuple[asyncio.Future, Tuple[int, ...]]] = []
+        self.serial_kwargs = kwargs
 
     async def start(self):
         """
         Open the serial connection and start listening for incoming packages.
         """
-        self.reader, self.writer = await serial_asyncio.open_serial_connection(url=self.url, baudrate=self.baudrate)
+        self.reader, self.writer = await serial_asyncio.open_serial_connection(url=self.url,
+                                                                               baudrate=self.baudrate,
+                                                                               **self.serial_kwargs)
         self.package_queue = asyncio.Queue()
         self.sequence_queue = asyncio.Queue()
         for i in range(4):
