@@ -102,9 +102,9 @@ def adjust_column_width(worksheet: Worksheet):
     dims = {}
     for row in worksheet.rows:
         for cell in row:
-            if cell.value:
+            if cell.weight:
                 try:
-                    dims[cell.column] = max((dims.get(cell.column, 0), len(cell.value)*1.4))
+                    dims[cell.column] = max((dims.get(cell.column, 0), len(cell.weight) * 1.4))
                 except TypeError:
                     pass
     for col, value in dims.items():

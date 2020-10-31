@@ -2,6 +2,7 @@
 requested. Subsequent calls return the cached value from that first call."""
 
 # Source: http://code.activestate.com/recipes/276643-caching-and-aliasing-with-descriptors/
+from typing import TypeVar, Callable, Literal, overload, Union
 
 import inspect
 
@@ -16,20 +17,42 @@ class cached(object):
 
     def __init__(self, method, name=None):
         self.method = method
+        self.setter_method = None
         self.name = name
         self.__doc__ = inspect.getdoc(self.method)
-        if 'return' in method.__annotations__:
-            self.__annotations__ = { 'return': method.__annotations__['return']}
+
+    def setter(self, method):
+        self.setter_method = method
+        return self
 
     def __set_name__(self, owner, name):
         self.name = self.name or name
+        self.cache_name = f"__{name}_cached_value"
 
-    def __get__(self, inst, cls):
-        if inst is None:
+    def __get__(self, instance, cls):
+        if instance is None:
             return self
-        result = self.method(inst)
-        setattr(inst, self.name, result)
+
+        if hasattr(instance, self.cache_name):
+            return getattr(instance, self.cache_name)
+
+        result = self.method(instance)
+        setattr(instance, self.cache_name, result)
         return result
+
+    def __set__(self, instance, value):
+        if instance is None:
+            return
+
+        if self.setter_method:
+            self.setter_method(instance, value)
+            setattr(instance, self.cache_name, value)
+        else:
+            raise AttributeError("can't set attribute")
+
+    def __delete__(self, instance):
+        if hasattr(instance, self.cache_name):
+            delattr(instance, self.cache_name)
 
 
 class cached_class(object):

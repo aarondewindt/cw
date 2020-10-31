@@ -38,9 +38,6 @@ class TestCachedProperties(unittest.TestCase):
         self.assertLess(clock() - t_0, dt)
         self.assertEqual(r, 42)
 
-        foo.bar = 1
-        self.assertEqual(foo.bar, 1)
-
     def test_cached_class(self):
         """Same as the other test, but returns 37 on all instances of the class. According to [1], 37 is objectively the
         funniest number."""
@@ -70,11 +67,6 @@ class TestCachedProperties(unittest.TestCase):
         r = baz.bar
         self.assertLess(clock() - t_0, dt)
         self.assertEqual(r, 37)
-
-        foo.bar = 1
-        self.assertEqual(foo.bar, 1)
-        # This does not seem to work across classes, I'll have a look if I ever end up needing it.
-        # self.assertEqual(baz.bar, 1)
 
     def test_cached_private(self):
         """Tests whether the cached property works with private (name mangled) functions."""
@@ -110,8 +102,72 @@ class TestCachedProperties(unittest.TestCase):
         self.assertLess(clock() - t_0, dt)
         self.assertEqual(r, 42)
 
-        foo.set_bar(1)
-        self.assertEqual(foo.get_bar(), 1)
+    def test_cached_setter(self):
+        class Foo:
+            """Test class."""
+
+            def __init__(self):
+                self.bar = 42
+                self.bas = 30
+
+            @cached
+            def qux(self):
+                return self.bar + self.bas
+
+            @qux.setter
+            def qux(self, value):
+                self.bar = value / 2
+                self.bas = value / 2
+
+        foo = Foo()
+        self.assertEqual(foo.qux, 72)
+
+        foo.qux = 32
+        self.assertEqual(foo.qux, 32)
+        self.assertAlmostEqual(foo.bar, 16)
+        self.assertAlmostEqual(foo.bas, 16)
+
+    def test_delete(self):
+        class Foo:
+            """Test class."""
+
+            def __init__(self):
+                self.bar = 42
+                self.bas = 30
+
+            @cached
+            def qux(self):
+                self.bar += 1
+                return self.bar + self.bas
+
+            @qux.setter
+            def qux(self, value):
+                self.bar = value / 2
+                self.bas = value / 2
+
+        foo = Foo()
+
+        del foo.qux
+
+        print(foo.qux)
+        print(foo.qux)
+
+        del foo.qux
+
+        print(foo.qux)
+        print(foo.qux)
+
+        foo.qux = 32
+
+        print(foo.qux)
+        print(foo.qux)
+
+        del foo.qux
+
+        print(foo.qux)
+        print(foo.qux)
+
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

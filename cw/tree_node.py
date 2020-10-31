@@ -163,7 +163,7 @@ class TreeNode:
 
     def path_values(self):
         for _, node in self.children:
-            yield node.path, node.value
+            yield node.path, node.weight
 
     def path_nodes(self):
         for _, node in self.children:
