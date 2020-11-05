@@ -85,6 +85,9 @@ class Simulation:
     def run(self, n_steps):
         return self.integrator.run(n_steps)
 
+    def stop(self):
+        return self.integrator.stop()
+
     def get_y_dot(self, t, y, *, temporary=True):
         """
         Executes all of the continuous modules and returns the state vector derivative.

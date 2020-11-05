@@ -30,6 +30,7 @@ class AB3Integrator(IntegratorBase):
         self.simulation = simulation
 
     def run(self, n_steps: int):
+        self.running = True
         try:
             for module in self.simulation.discrete_modules:
                 if not (remainder(module.target_time_step, self.h) < 1e-8):
@@ -41,16 +42,19 @@ class AB3Integrator(IntegratorBase):
             self.simulation.logging.reset(n_steps)
             t0 = self.simulation.states.t
             self.must_differentiate = self.simulation.states.get_differentiation_y() is not None
+            self.k: Deque[Union[None, float]] = deque([None, None, None, None])
             self.previous_step_t1 = self.simulation.states.t
             self.previous_step_y1 = self.simulation.states.get_y()
             for step_idx in range(n_steps):
+                if not self.running:
+                    break
                 t = t0 + (step_idx + 1) * self.h
                 self.run_single_step(step_idx, t)
         except:
-            raise
             traceback.print_exc()
-
-        return self.simulation.logging.finish()
+        finally:
+            self.running = False
+            return self.simulation.logging.finish()
 
     def run_single_step(self, step_idx: int, t1: float):
         # print("run_single_step", t1)

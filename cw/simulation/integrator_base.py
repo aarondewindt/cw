@@ -7,6 +7,7 @@ from cw.simulation.exception import SimulationError
 class IntegratorBase:
     def __init__(self):
         self.simulation = None
+        self.running = False
 
     def initialize(self, simulation):
         if self.simulation is None:
@@ -14,6 +15,9 @@ class IntegratorBase:
 
     def run(self, n_steps):
         raise NotImplemented()
+
+    def stop(self):
+        self.running = False
 
     def run_single_step(self, step_idx: int, t1: float):
         raise NotImplemented()

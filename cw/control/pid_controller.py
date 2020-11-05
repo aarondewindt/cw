@@ -13,15 +13,18 @@ class PIDController:
     :param float k_d: Differential gain
     """
     def __init__(self, k_p, k_i, k_d):
+        self.k_p = k_p
+        self.k_i = k_i
+        self.k_d = k_d
+        self.reset()
+
+    def reset(self):
         self.command = None
         self.output = np.empty((0,))
         self.integral = np.empty((0,))
         self.derivative = np.empty((0,))
         self.error = None
         self.time = None
-        self.k_p = k_p
-        self.k_i = k_i
-        self.k_d = k_d
 
     def step(self, time, value):
         """
