@@ -8,6 +8,9 @@ with open(ver_path) as ver_file:
     exec(ver_file.read(), ns)
     version = ns['version']
 
+with open('requirements.txt') as f:
+    required = f.read().splitlines()
+
 setup(
     name='cw',
     version=ns['version'],
@@ -16,27 +19,7 @@ setup(
     author_email='',
     url='https://github.com/aarondewindt/cw',
 
-    install_requires=['numpy',
-                      'scipy',
-                      'msgpack',
-                      'PyYAML',
-                      'python-dateutil',
-                      'cerberus',
-                      'pyserial',
-                      'pyserial-asyncio',
-                      'tqdm',
-                      "openpyxl",
-                      "psutil",
-                      "pyproj",
-                      "requests",
-                      "matplotlib",
-                      "xarray",
-                      "sympy",
-                      "control",
-                      "msgpack_numpy",
-                      "pandas",
-                      "numba>=0.46.0",
-                      "numpy-quaternion"],
+    install_requires=required,
     packages=find_packages('.', exclude=["test"]),
     package_data={
         "cw.aero_file": ["*.yaml"],
