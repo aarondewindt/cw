@@ -9,7 +9,7 @@ import numpy as np
 from cw.simulation.integrator_base import IntegratorBase
 from cw.simulation.states_base import StatesBase
 from cw.simulation.module_base import ModuleBase
-from cw.simulation.logging import Logging
+from cw.simulation.logging import LoggerBase
 from cw.simulation.exception import SimulationError
 
 
@@ -18,7 +18,7 @@ class Simulation:
                  states_class: type,
                  integrator: IntegratorBase,
                  modules: Sequence[ModuleBase],
-                 logging: Logging,
+                 logging: LoggerBase,
                  initial_state_values=None):
         self.integrator = integrator
         self.modules = modules
