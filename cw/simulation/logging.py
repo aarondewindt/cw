@@ -70,8 +70,13 @@ class Logging(LoggerBase):
         # Time field
         t = field_values.pop("t")
 
+        attributes = {}
+        for module in self.simulation.modules:
+            if module_attributes := module.get_attributes():
+                attributes.update(module_attributes)
+
         # Create data set and return it.
-        self.results = xr.Dataset(field_values, coords={"t": t[1]})
+        self.results = xr.Dataset(field_values, coords={"t": t[1]}, attrs=attributes)
         return self.results
 
 
