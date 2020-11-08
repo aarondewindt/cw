@@ -32,3 +32,6 @@ class ModuleBase:
 
     def end(self):
         pass
+
+    def get_attributes(self):
+        pass
