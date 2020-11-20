@@ -14,14 +14,18 @@ class EndItemType(Singleton):
 EndItem = EndItemType()
 
 
-def iterify(obj):
+def iterify(obj, scalar_types=None):
     """
     Yields the object if it's not an iterable. If it's an iterable it yield the
     elements of the iterable. Strings and byte strings are handles as scalar elements.
 
     :param obj: Object to iterify.
+    :param scalar_types: Iterable types which may be treated as scalar. Default are
+                         `str` and `bytes`.
     """
-    if isinstance(obj, (str, bytes)):
+    scalar_types = scalar_types or (str, bytes)
+
+    if isinstance(obj, scalar_types):
         yield obj
     elif isinstance(obj, IterableType):
         yield from obj

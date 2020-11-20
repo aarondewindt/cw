@@ -22,8 +22,8 @@ lbs_to_N = 1 / newton_to_lbs
 fps_to_mps = 0.3048000
 mps_to_fps = 1 / fps_to_mps
 
-knot_to_mps = 0.514444
-mps_to_knot = 1 / knot_to_mps
+kts_to_mps = knot_to_mps = 0.514444
+mps_to_kts = mps_to_knot = 1 / knot_to_mps
 
 ft2_to_m2 = 0.092903
 m2_to_ft2 = 1 / ft2_to_m2
@@ -33,6 +33,12 @@ rad_to_deg = 180 / math.pi
 
 fps2_to_mps2 = 0.3048000
 mps2_to_fps2 = 1 / fps2_to_mps2
+
+psf_to_pa = 47.880258888889
+pa_to_psf = 1 / psf_to_pa
+
+lbf_to_n = 4.4482216
+n_to_lbf = 1 / lbf_to_n
 
 
 def q_to_euler(q):

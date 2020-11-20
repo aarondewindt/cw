@@ -85,3 +85,13 @@ class Pyx2PyiCLI(CLIBase):
                         # Call generate_cython_pyi.
                         # Write result to pyi file.
                         f_pyi.write(generate_cython_pyi(f_pyx.read()))
+                print(f"{pyx_path} -> {pyi_path}")
+            elif pyx_path.is_dir():
+                for path in pyx_path.glob("*.pyx"):
+                    pyi_path = path.with_suffix(".pyi")
+                    with path.open("r") as f_pyx:
+                        with pyi_path.open("w") as f_pyi:
+                            f_pyi.write(generate_cython_pyi(f_pyx.read()))
+                    print(f"{path} -> {pyi_path.name}")
+
+
