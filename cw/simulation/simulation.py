@@ -1,7 +1,7 @@
 from contextlib import contextmanager
 from copy import deepcopy, copy
 from typing import Sequence, List, Set
-from dataclasses import fields, is_dataclass
+from dataclasses import fields, is_dataclass, replace as dataclasses_replace
 from math import fmod
 
 import numpy as np
@@ -29,8 +29,11 @@ class Simulation:
             raise TypeError("The states class must be a dataclass.")
         self.states: StatesBase = states_class(**(initial_state_values or {}))
 
+        self.stashed_states = None
+
         self.discrete_modules: List[ModuleBase] = []
         self.continuous_modules: List[ModuleBase] = []
+        self.initialize()
 
     @contextmanager
     def temporary_states(self, temporary=True):
@@ -42,6 +45,13 @@ class Simulation:
             self.states = original_states
         else:
             yield
+
+    def stash_states(self):
+        self.stashed_states = deepcopy(self.states)
+
+    def restore_states(self):
+        if self.stashed_states:
+            self.states = deepcopy(self.stashed_states)
 
     def initialize(self):
         self.integrator.initialize(self)
@@ -64,8 +74,6 @@ class Simulation:
                     raise SimulationError(
                         f"Missing required states for module '{module.name}': {', '.join(states_set)}")
 
-            module.initialize(self)
-
         time_field_valid = False
         for field in fields(self.states):
             field_value = getattr(self.states, field.name)
@@ -83,6 +91,8 @@ class Simulation:
             raise SimulationError("The time field 't' in the states dataclass is missing or of invalid type.")
 
     def run(self, n_steps):
+        for module in self.modules:
+            module.initialize(self)
         return self.integrator.run(n_steps)
 
     def stop(self):
