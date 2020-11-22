@@ -20,7 +20,7 @@ class Simulation:
                  modules: Sequence[ModuleBase],
                  logging: LoggerBase,
                  initial_state_values=None):
-        self.integrator = integrator
+        self.integrator: IntegratorBase = integrator
         self.modules = modules
         self.logging = logging
         if is_dataclass:

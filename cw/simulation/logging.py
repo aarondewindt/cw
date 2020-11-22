@@ -53,31 +53,34 @@ class Logging(LoggerBase):
         self.step_idx += 1
 
     def finish(self):
-        # Dictionary holding all field values.
-        field_values = {field.name: ([], [None] * self.logged_samples) for field in fields(self.raw_log[0])}
+        if self.logged_samples:
+            # Dictionary holding all field values.
+            field_values = {field.name: ([], [None] * self.logged_samples) for field in fields(self.simulation.states_class)}
 
-        for field_name, field_list in field_values.items():
-            field_value = getattr(self.raw_log[0], field_name)
-            field_list[0].append("t")
-            if not np.isscalar(field_value):
-                field_list[0].extend([f"d_{field_value.shape[i]}_{i}" for i in range(np.ndim(field_value))])
-
-        # Move all values to the dictionary
-        for step_idx, step_data in enumerate(until(self.raw_log, None)):
             for field_name, field_list in field_values.items():
-                field_list[1][step_idx] = getattr(step_data, field_name)
+                field_value = getattr(self.raw_log[0], field_name)
+                field_list[0].append("t")
+                if not np.isscalar(field_value):
+                    field_list[0].extend([f"d_{field_value.shape[i]}_{i}" for i in range(np.ndim(field_value))])
 
-        # Time field
-        t = field_values.pop("t")
+            # Move all values to the dictionary
+            for step_idx, step_data in enumerate(until(self.raw_log, None)):
+                for field_name, field_list in field_values.items():
+                    field_list[1][step_idx] = getattr(step_data, field_name)
 
-        attributes = {}
-        for module in self.simulation.modules:
-            if module_attributes := module.get_attributes():
-                attributes.update(module_attributes)
+            # Time field
+            t = field_values.pop("t")
 
-        # Create data set and return it.
-        self.results = xr.Dataset(field_values, coords={"t": t[1]}, attrs=attributes)
-        return self.results
+            attributes = {}
+            for module in self.simulation.modules:
+                if module_attributes := module.get_attributes():
+                    attributes.update(module_attributes)
+
+            # Create data set and return it.
+            self.results = xr.Dataset(field_values, coords={"t": t[1]}, attrs=attributes)
+            return self.results
+        else:
+            return None
 
 
 class LastValueLogger(LoggerBase):
@@ -123,24 +126,27 @@ class BatchLogger(LoggerBase):
         return result
 
     def finish_batch(self):
-        # Dictionary holding all field values.
-        field_values = {field.name: ([], [None] * len(self.raw_log)) for field in fields(self.raw_log[0])}
+        if self.raw_log:
+            # Dictionary holding all field values.
+            field_values = {field.name: ([], [None] * len(self.raw_log)) for field in fields(self.simulation.states_class)}
 
-        for field_name, field_list in field_values.items():
-            field_value = getattr(self.raw_log[0], field_name)
-            field_list[0].append("idx")
-            if not np.isscalar(field_value):
-                field_list[0].extend([f"d_{field_value.shape[i]}_{i}" for i in range(np.ndim(field_value))])
-
-        # Move all values to the dictionary
-        for step_idx, step_data in enumerate(until(self.raw_log, None)):
             for field_name, field_list in field_values.items():
-                field_list[1][step_idx] = getattr(step_data, field_name)
+                field_value = getattr(self.raw_log[0], field_name)
+                field_list[0].append("idx")
+                if not np.isscalar(field_value):
+                    field_list[0].extend([f"d_{field_value.shape[i]}_{i}" for i in range(np.ndim(field_value))])
 
-        attributes = {}
-        for module in self.simulation.modules:
-            if module_attributes := module.get_attributes():
-                attributes.update(module_attributes)
+            # Move all values to the dictionary
+            for step_idx, step_data in enumerate(until(self.raw_log, None)):
+                for field_name, field_list in field_values.items():
+                    field_list[1][step_idx] = getattr(step_data, field_name)
 
-        # Create data set and return it.
-        return xr.Dataset(field_values, coords={"idx": range(len(self.raw_log))}, attrs=attributes)
+            attributes = {}
+            for module in self.simulation.modules:
+                if module_attributes := module.get_attributes():
+                    attributes.update(module_attributes)
+
+            # Create data set and return it.
+            return xr.Dataset(field_values, coords={"idx": range(len(self.raw_log))}, attrs=attributes)
+        else:
+            return None
