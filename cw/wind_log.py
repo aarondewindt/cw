@@ -6,6 +6,8 @@ alt_1000_ft = 304.8
 m_to_ft = 3.28084
 
 
+# Reference: MIL-F-8785C, MILITARY SPECIFICATION: FLYING QUALITIES OF PILOTED AIRPLANES (05 NOV 1980)
+
 def wind_log(alt, speed, heading, z0=2.0, degree=True):
     if degree:
         heading = heading * 0.017453292519943295
@@ -20,6 +22,7 @@ def wind_log(alt, speed, heading, z0=2.0, degree=True):
         v = speed * log(1000 / z0) / log(20 / z0)
     _VN = v * cos(heading)
     _VE = v * sin(heading)
+    return _VN, _VE
 
 
 def wind_log_table(speed, heading, z0=2.0):

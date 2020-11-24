@@ -25,6 +25,8 @@ class AB3Integrator(IntegratorBase):
         self.previous_step_y1 = None
         self.previous_step_t1 = None
         self.must_differentiate = None
+        self.n_steps_since_reset = 0
+        self.reset_states = False
 
     def initialize(self, simulation):
         self.simulation = simulation
@@ -45,11 +47,14 @@ class AB3Integrator(IntegratorBase):
             self.k: Deque[Union[None, float]] = deque([None, None, None, None])
             self.previous_step_t1 = self.simulation.states.t
             self.previous_step_y1 = self.simulation.states.get_y()
+            self.reset()
             for step_idx in range(n_steps):
                 if not self.running:
                     break
                 t = t0 + (step_idx + 1) * self.h
                 self.run_single_step(step_idx, t)
+        except KeyboardInterrupt:
+            raise
         except:
             traceback.print_exc()
         finally:
@@ -74,6 +79,10 @@ class AB3Integrator(IntegratorBase):
             else:
                 module.run_step()
 
+        if self.reset_states:
+            self.reset_states = False
+            y0 = self.simulation.states.get_y()
+
         # Log states at t0
         self.simulation.logging.log()
 
@@ -81,7 +90,7 @@ class AB3Integrator(IntegratorBase):
         y0_dot = self.simulation.states.get_y_dot()
 
         # Use RK4 for the first few steps or if we have to use it.
-        if (step_idx < 4) or self.rk4:
+        if (self.n_steps_since_reset < 4) or self.rk4:
             self.k.popleft()
             k1 = self.h * y0_dot
             k2 = self.h * self.simulation.get_y_dot(t0 + self.hdiv2, y0 + k1/2)
@@ -99,3 +108,9 @@ class AB3Integrator(IntegratorBase):
         self.simulation.states.set_t_y(t1, y1)
         self.previous_step_t1 = t1
         self.previous_step_y1 = y1
+        self.n_steps_since_reset += 1
+
+    def reset(self, states=False):
+        self.n_steps_since_reset = 0
+        if states:
+            self.reset_states=True
