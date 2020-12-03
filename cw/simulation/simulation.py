@@ -1,6 +1,6 @@
 from contextlib import contextmanager
 from copy import deepcopy, copy
-from typing import Sequence, List, Set
+from typing import Sequence, List, Set, Type, TypeVar
 from dataclasses import fields, is_dataclass, replace as dataclasses_replace
 from math import fmod
 
@@ -11,6 +11,8 @@ from cw.simulation.states_base import StatesBase
 from cw.simulation.module_base import ModuleBase
 from cw.simulation.logging import LoggerBase
 from cw.simulation.exception import SimulationError
+
+T = TypeVar('T', bound=ModuleBase)
 
 
 class Simulation:
@@ -93,7 +95,10 @@ class Simulation:
     def run(self, n_steps):
         for module in self.modules:
             module.initialize(self)
-        return self.integrator.run(n_steps)
+        result = self.integrator.run(n_steps)
+        for module in self.modules:
+            module.end()
+        return result
 
     def stop(self):
         return self.integrator.stop()
@@ -123,7 +128,7 @@ class Simulation:
         for module in self.discrete_modules:
             module.run_step()
 
-    def find_modules_by_type(self, klass):
+    def find_modules_by_type(self, klass: Type[T]) -> List[T]:
         result = []
         for module in self.modules:
             if isinstance(module, klass):
