@@ -1,7 +1,8 @@
+from abc import ABC, abstractmethod
 from typing import Optional, Sequence
 
 
-class ModuleBase:
+class ModuleBase(ABC):
     def __init__(self, *,
                  target_time_step: Optional[float]=None,
                  is_discreet: bool=False,
