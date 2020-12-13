@@ -28,6 +28,11 @@ class ModuleBase(ABC):
         self.step()
         del self.s
 
+    def run_end(self):
+        self.s = self.simulation.states
+        self.end()
+        del self.s
+
     def step(self):
         pass
 

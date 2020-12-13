@@ -92,12 +92,15 @@ class Simulation:
         if not time_field_valid:
             raise SimulationError("The time field 't' in the states dataclass is missing or of invalid type.")
 
+        for module in self.modules:
+            module.initialize(self)
+
     def run(self, n_steps):
         for module in self.modules:
             module.initialize(self)
         result = self.integrator.run(n_steps)
         for module in self.modules:
-            module.end()
+            module.run_end()
         return result
 
     def stop(self):

@@ -25,3 +25,4 @@ dependencies:
       - pandas
       - xarray
       - sympy
+      - gym
