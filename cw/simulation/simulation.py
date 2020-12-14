@@ -99,8 +99,6 @@ class Simulation:
         for module in self.modules:
             module.initialize(self)
         result = self.integrator.run(n_steps)
-        for module in self.modules:
-            module.run_end()
         return result
 
     def stop(self):

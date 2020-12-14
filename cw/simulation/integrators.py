@@ -59,6 +59,8 @@ class AB3Integrator(IntegratorBase):
             traceback.print_exc()
         finally:
             self.running = False
+            for module in self.simulation.modules:
+                module.run_end()
             return self.simulation.logging.finish()
 
     def run_single_step(self, step_idx: int, t1: float):
