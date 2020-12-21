@@ -1,5 +1,7 @@
 from dataclasses import fields
 
+from IPython.display import display, Markdown, JSON
+
 
 class StatesBase:
     def __init__(self, *args, **kwargs):
@@ -22,9 +24,6 @@ class StatesBase:
     def set_differentiation_y_dot(y_dot):
         pass
 
-    def _repr_html_(self):
-        html_lines = ["States:"]
-        for field in fields(self):
-            value = getattr(self, field.name)
-            html_lines.append(f" - {field.name}: {value}")
-        return "<br>".join(html_lines)
+    def _ipython_display_(self):
+        fields_dict = {field.name: str(getattr(self, field.name)) for field in fields(self)}
+        display(JSON(fields_dict))

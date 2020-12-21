@@ -103,26 +103,59 @@ class LastValueLogger(LoggerBase):
 
 class BatchLogger(LoggerBase):
     def __init__(self):
-        self.last_state = None
+        self.last_results = None
         self.simulation = None
         self.raw_log = deque()
         self.results = None
+
+        self.log_full_episode = False
+
+        self.episode_raw_log = deque()
 
     def initialize(self, simulation):
         self.simulation = simulation
 
     def reset(self, n_steps):
-        self.last_state = None
+        self.episode_raw_log = deque()
 
     def reset_batch(self):
         self.raw_log = deque()
 
     def log(self):
-        pass
+        if self.log_full_episode:
+            self.episode_raw_log.append(copy(self.simulation.states))
 
     def finish(self):
         result = copy(self.simulation.states)
         self.raw_log.append(result)
+
+        if self.log_full_episode and self.episode_raw_log:
+            # Dictionary holding all field values.
+            field_values = {field.name: ([], [None] * len(self.episode_raw_log)) for field in
+                            fields(self.simulation.states_class)}
+
+            for field_name, field_list in field_values.items():
+                field_value = getattr(self.episode_raw_log[0], field_name)
+                field_list[0].append("t")
+                if not np.isscalar(field_value):
+                    field_list[0].extend([f"d_{field_value.shape[i]}_{i}" for i in range(np.ndim(field_value))])
+
+            # Move all values to the dictionary
+            for step_idx, step_data in enumerate(until(self.episode_raw_log, None)):
+                for field_name, field_list in field_values.items():
+                    field_list[1][step_idx] = getattr(step_data, field_name)
+
+            # Time field
+            t = field_values.pop("t")
+
+            attributes = {}
+            for module in self.simulation.modules:
+                if module_attributes := module.get_attributes():
+                    attributes.update(module_attributes)
+
+            # Create data set and return it.
+            return xr.Dataset(field_values, coords={"t": t[1]}, attrs=attributes)
+
         return result
 
     def finish_batch(self):

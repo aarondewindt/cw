@@ -1,12 +1,14 @@
 from typing import Tuple, Any, Union
 from abc import ABC, abstractmethod
-from threading import Thread
+from threading import Thread, RLock, Condition
 from enum import Flag, auto
+from concurrent.futures import Future
 
 import gym
 import xarray as xr
 from gym import spaces
 from tqdm.auto import trange
+from tqdm import tqdm
 
 from cw.simulation.module_base import ModuleBase
 from cw.simulation.logging import BatchLogger
@@ -43,21 +45,26 @@ class GymEnvironment(ModuleBase, gym.Env):
         self.reset_semaphore: Union[BinarySemaphore, None] = None
         self.last_results: Union[xr.Dataset, Any, None] = None
         self.last_batch_results: Union[xr.Dataset, None] = None
+        self.end_semaphore: Union[BinarySemaphore, None] = None
 
-        self.batch_running = False
+        self.simulation_result_futures = []
+
+        self.simulation_result_futures_lock = RLock()
+        self.is_done_lock = RLock()
+        self.step_lock = RLock()
+
+        self.thread_running = False
         self.reset_state = ResetState.no_reset_first_step
         self.is_done = False
 
     def initialize(self, simulation):
         super().initialize(simulation)
 
-    def simulation_thread_target(self, n_steps, n_episodes, progress_bar) -> None:
+    def simulation_thread_target(self, n_steps) -> None:
         """
         Thread target running simulantion batch.
 
         :param n_steps: Number of steps per episode.
-        :param n_episodes: Number of episodes.
-        :param progress_bar: Tqdm progress bar for the batch.
         """
         batch_logger = BatchLogger()
         batch_logger.initialize(self.simulation)
@@ -67,9 +74,9 @@ class GymEnvironment(ModuleBase, gym.Env):
         # Set reset state to not resetting, and processing the first step.
         self.reset_state = ResetState.no_reset_first_step
         try:
-            for episode_idx in progress_bar:
+            while True:
                 # Break the loop if the batch is not running.
-                if not self.batch_running:
+                if not self.thread_running:
                     break
 
                 # Restore the initial simulation states at the start of each episode.
@@ -77,6 +84,12 @@ class GymEnvironment(ModuleBase, gym.Env):
 
                 # Run simulation
                 self.last_results = self.simulation.run(n_steps)
+
+                with self.simulation_result_futures_lock:
+                    for future in self.simulation_result_futures:
+                        if not future.done():
+                            future.set_result(self.last_results)
+                    self.simulation_result_futures = []
 
                 # If resetting we need to run the first iteration up the agent and
                 # let the reset function return an observation of the first step.
@@ -88,17 +101,17 @@ class GymEnvironment(ModuleBase, gym.Env):
                     self.reset_state = ResetState.no_reset_first_step
 
         except KeyboardInterrupt:
-            self.batch_running = False
+            self.thread_running = False
         finally:
             self.environment_semaphore = None
             self.agent_semaphore = None
             self.reset_semaphore = None
             self.simulation_thread = None
-            self.batch_running = False
+            self.thread_running = False
             self.last_batch_results = batch_logger.finish_batch()
             self.simulation.logging = original_logger
 
-    def run_batch(self, n_steps, n_episodes):
+    def start_simulation_thread(self, n_steps):
         if self.simulation_thread is None:
             self.simulation.stash_states()
 
@@ -106,22 +119,21 @@ class GymEnvironment(ModuleBase, gym.Env):
             self.environment_semaphore = BinarySemaphore(False)
             self.agent_semaphore = BinarySemaphore(False)
             self.reset_semaphore = BinarySemaphore(False)
+            self.end_semaphore = BinarySemaphore(False)
 
             self.simulation_thread = Thread(target=self.simulation_thread_target,
-                                            daemon=True, args=(n_steps, n_episodes, trange(n_episodes)))
-            self.batch_running = True
+                                            daemon=True, args=(n_steps,))
+            self.thread_running = True
             self.simulation_thread.start()
         else:
-            print("Batch already running")
+            print("Simulation thread already running")
 
-    def end_batch(self):
+    def end_simulation_thread(self):
         if self.simulation_thread is not None:
-            self.batch_running = False
+            self.thread_running = False
             self.simulation.stop()
 
     def run_step(self):
-        print(self.reset_state)
-
         if self.reset_state == ResetState.reset_ending_episode:
             # This can be left out if we assume the reset and step functions are called
             # in the same thread. However I know me, and me will come up with some `brilliant`
@@ -129,7 +141,8 @@ class GymEnvironment(ModuleBase, gym.Env):
             # end up in a undebuggable freeze.
             self.agent_semaphore.release()
         else:
-            self.is_done = False
+            with self.is_done_lock:
+                self.is_done = False
             self.agent_semaphore.release()
 
             if self.reset_state == ResetState.reset_starting_new_episode:
@@ -139,8 +152,10 @@ class GymEnvironment(ModuleBase, gym.Env):
 
     def run_end(self):
         if self.reset_state & ResetState.no_reset:
-            self.is_done = True
+            with self.is_done_lock:
+                self.is_done = True
             self.agent_semaphore.release()
+            self.end_semaphore.acquire()
 
     def step(self, action: Any) -> Tuple[Any, float, bool, dict]:
         # We are running the first step, so change the reset state.
@@ -165,12 +180,16 @@ class GymEnvironment(ModuleBase, gym.Env):
         # Lock until the simulation has run the iteration.
         self.agent_semaphore.acquire()
 
-        # Observe environment.
-        observation, reward, info = self.observe(self.is_done)
-        del self.s
+        with self.is_done_lock:
+            # Observe environment.
+            observation, reward, info = self.observe(self.is_done)
+            del self.s
 
-        # Return observation.
-        return observation, reward, self.is_done, info
+            result = observation, reward, self.is_done, info
+
+            if self.is_done:
+                self.end_semaphore.release()
+        return result
 
     @abstractmethod
     def act(self, action: Any):
@@ -187,9 +206,9 @@ class GymEnvironment(ModuleBase, gym.Env):
         if self.reset_state == ResetState.no_reset_first_step:
             # States alias
             self.s = self.simulation.states
-            observation, reward, info = self.observe(self.is_done)
+            observation = self.observe(self.is_done)[0]
             del self.s
-            return observation, reward, False, info
+            return observation
 
         # Set the state to reset and still running (aka, ending episode)
         # Stop simulation
@@ -202,7 +221,10 @@ class GymEnvironment(ModuleBase, gym.Env):
         self.reset_semaphore.acquire()
 
         # Return observation.
-        return self.observe(False)
+        self.s = self.simulation.states
+        observation = self.observe(self.is_done)[0]
+        del self.s
+        return observation
 
     def render(self, mode='human'):
         pass
@@ -212,3 +234,10 @@ class GymEnvironment(ModuleBase, gym.Env):
 
     def seed(self, seed=None):
         pass
+
+    def create_result_future(self):
+        future = Future()
+        with self.simulation_result_futures_lock:
+            self.simulation_result_futures.append(future)
+        return future
+
