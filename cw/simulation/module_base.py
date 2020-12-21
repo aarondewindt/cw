@@ -23,9 +23,9 @@ class ModuleBase(ABC):
     def initialize(self, simulation):
         self.simulation = simulation
 
-    def run_step(self):
+    def run_step(self, is_last):
         self.s = self.simulation.states
-        self.step()
+        self.step(is_last)
         del self.s
 
     def run_end(self):
@@ -33,7 +33,7 @@ class ModuleBase(ABC):
         self.end()
         del self.s
 
-    def step(self):
+    def step(self, is_last):
         pass
 
     def end(self):

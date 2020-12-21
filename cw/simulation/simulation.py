@@ -23,8 +23,8 @@ class Simulation:
                  logging: LoggerBase,
                  initial_state_values=None):
         self.integrator: IntegratorBase = integrator
-        self.modules = modules
-        self.logging = logging
+        self.modules: Sequence[ModuleBase] = modules
+        self.logging: LoggerBase = logging
         if is_dataclass:
             self.states_class = states_class
         else:
@@ -104,7 +104,7 @@ class Simulation:
     def stop(self):
         return self.integrator.stop()
 
-    def get_y_dot(self, t, y, *, temporary=True):
+    def get_y_dot(self, t, y, is_last, *, temporary=True):
         """
         Executes all of the continuous modules and returns the state vector derivative.
         """
@@ -113,7 +113,7 @@ class Simulation:
             self.states.set_t_y(t, y)
             # Run continuous modules
             for module in self.continuous_modules:
-                module.run_step()
+                module.run_step(is_last)
             # Get the state vector derivative.
             return self.states.get_y_dot()
 
