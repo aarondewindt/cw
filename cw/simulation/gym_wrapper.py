@@ -143,6 +143,9 @@ class GymEnvironment(ModuleBase, gym.Env):
         with self.is_done_lock:
             self.is_done = is_last
 
+        # Run the environment step function.
+        self.environment_step(is_last)
+
         self.agent_semaphore.release()
 
         # Release the reset function if this is the first step
@@ -153,6 +156,9 @@ class GymEnvironment(ModuleBase, gym.Env):
         self.environment_semaphore.acquire()
 
     def run_end(self):
+        pass
+
+    def environment_step(self, is_last):
         pass
 
     def step(self, action: Any) -> Tuple[Any, float, bool, dict]:
@@ -166,9 +172,6 @@ class GymEnvironment(ModuleBase, gym.Env):
         if self.simulation_thread is None:
             raise Exception("Simulation thread not running.")
 
-        # States alias
-        self.s = self.simulation.states
-
         # Perform action.
         self.act(action)
 
@@ -181,7 +184,6 @@ class GymEnvironment(ModuleBase, gym.Env):
         with self.is_done_lock:
             # Observe environment.
             observation, reward, info = self.observe(self.is_done)
-            del self.s
 
             if self.is_done:
                 self.environment_semaphore.release()
@@ -201,9 +203,7 @@ class GymEnvironment(ModuleBase, gym.Env):
             # No actions have been taken yet on the current episode
             # so there is no need to reset it. Just return the current
             # observation.
-            self.s = self.simulation.states
             observation = self.observe(self.is_done)[0]
-            del self.s
             return observation
 
         # Set the state to reset and still running (aka, ending episode)
@@ -217,9 +217,7 @@ class GymEnvironment(ModuleBase, gym.Env):
         self.reset_semaphore.acquire()
 
         # Return observation.
-        self.s = self.simulation.states
         observation = self.observe(self.is_done)[0]
-        del self.s
         return observation
 
     def render(self, mode='human'):
