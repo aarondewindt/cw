@@ -132,6 +132,8 @@ class AB3Integrator(IntegratorBase):
             k3 = self.h * self.simulation.get_y_dot(t0 + self.hdiv2, y0 + k2/2, is_last)
             k4 = self.h * self.simulation.get_y_dot(t0 + self.h, y0 + k3, is_last)
             y1 = y0 + (k1 + 2 * k2 + 2 * k3 + k4) / 6
+
+            # TODO: Possible bug, appending `h * y0_dot` here, while appending `y0_dot` in AB3 section
             self.k.append(k1)
 
         # Use Adams-Bashforth 3 otherwise.

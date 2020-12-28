@@ -1,6 +1,6 @@
 from dataclasses import fields
 
-from IPython.display import display, Markdown, JSON
+from IPython.display import display, JSON
 
 
 class StatesBase:
