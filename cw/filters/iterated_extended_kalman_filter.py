@@ -6,6 +6,7 @@ from collections import deque
 from textwrap import indent
 from tqdm import tqdm
 from scipy.linalg import expm
+from IPython.display import display, Latex, Markdown
 
 
 class IteratedExtendedKalmanFilter:
@@ -65,7 +66,7 @@ class IteratedExtendedKalmanFilter:
         self.fx_func: Callable = sp.lambdify(self.txu, self.fx)
         self.hx_func: Callable = sp.lambdify(self.txu, self.hx)
 
-    def __str__(self):
+    def __repr__(self):
         return f"IteratedExtendedKalmanFilter:\n" + indent(
             f"x:\n{indent(sp.pretty(self.x, wrap_line=False), '  ')}\n"
             f"z:\n{indent(sp.pretty(self.z, wrap_line=False), '  ')}\n"
@@ -76,17 +77,25 @@ class IteratedExtendedKalmanFilter:
             f"fx:\n{indent(sp.pretty(self.fx, wrap_line=False), '  ')}\n"
             f"hx:\n{indent(sp.pretty(self.hx, wrap_line=False), '  ')}\n", '  ')
 
-    def print_latex(self, jacobians=False):
-        a = f"x:\n{indent(sp.latex(self.x), '  ')}\n" \
-            f"z:\n{indent(sp.latex(self.z), '  ')}\n" \
-            f"u:\n{indent(sp.latex(self.u), '  ')}\n" \
-            f"f:\n{indent(sp.latex(self.f), '  ')}\n" \
-            f"g:\n{indent(sp.latex(self.g), '  ')}\n" \
-            f"h:\n{indent(sp.latex(self.h), '  ')}\n"
+    def _ipython_display_(self):
+        display(Markdown(self.latex(True)))
+
+    def latex(self, jacobians=False):
+        def to_latex(name, equation):
+            return f"$${name} = {sp.latex(equation)}$$"
+
+        equations = [("x", self.x),
+                     ("z", self.z),
+                     ("u", self.u),
+                     ("f(\dots)", self.f),
+                     ("g(\dots)", self.g),
+                     ("h(\dots)", self.h)]
+
         if jacobians:
-            a += f"fx:\n{indent(sp.pretty(self.fx, wrap_line=False), '  ')}\n" \
-                 f"hx:\n{indent(sp.pretty(self.hx, wrap_line=False), '  ')}\n", '  '
-        print(a)
+            equations.extend([('F_x(\dots)', self.fx),
+                              ('H_x(\dots)', self.hx)])
+
+        return "  \n".join(to_latex(name, equation) for name, equation in equations)
 
     def sim(self,
             *,
