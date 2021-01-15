@@ -4,6 +4,28 @@ from collections import Sequence
 
 # TODO: Write unitttest for control.
 
+
+class PController:
+    def __init__(self, k_p):
+        self.k_p = k_p
+        self.reset()
+
+    def reset(self):
+        self.command = None
+        self.output = np.empty((0,))
+        self.error = None
+
+    def step(self, value):
+        value = np.asarray(value)
+
+        # Command to zero if we don't have a command yet.
+        if self.command is None:
+            self.command = np.zeros(value.shape)
+
+        self.error = self.command - value
+        return self.k_p * self.error
+
+
 class PIDController:
     """
     Simple PID controller.

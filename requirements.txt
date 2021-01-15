@@ -19,3 +19,5 @@ msgpack_numpy
 pandas
 numba>=0.46.0
 numpy-quaternion
+gym
+semver

@@ -1,4 +1,5 @@
 import numpy as np
+import xarray as xr
 from scipy.signal import butter, filtfilt
 from cw.filters.exponential_running_average import ExponentialRunningAverage
 
@@ -14,7 +15,23 @@ def smooth_signal(signal, method="butter", **kwargs):
     :return: Filtered signal
     """
     if method in smoothing_methods:
-        return smoothing_methods[method](signal, **kwargs)
+        if isinstance(signal, xr.DataArray):
+            data_array = signal
+            signal = data_array.values
+        else:
+            data_array = None
+
+        signal = smoothing_methods[method](signal, **kwargs)
+
+        if data_array is not None:
+            return xr.DataArray(
+                data=signal,
+                coords=data_array.coords,
+                dims=data_array.dims,
+                name=f"{data_array.name}_smoothed",
+                attrs=data_array.attrs)
+        else:
+            return signal
 
 
 def smooth_signal_butter(signal, wn=0.01):
