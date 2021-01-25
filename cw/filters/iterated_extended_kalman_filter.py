@@ -6,7 +6,7 @@ import control as ct
 from typing import Callable, Optional, Sequence, Union, Tuple
 from collections import deque
 from textwrap import indent
-from tqdm.auto import tqdm
+from tqdm.auto import tqdm, trange
 from scipy.linalg import expm
 from IPython.display import display, Markdown
 from scipy.signal import cont2discrete
@@ -184,9 +184,6 @@ class IteratedExtendedKalmanFilter:
         n_u = len(self.u)
         n_z = len(self.z)
 
-        c_null = np.zeros((1, n_x))
-        d_null = np.zeros((1, n_u))
-
         # Make sure p_0, Q and R are ndarray
         p_0 = np.asarray(p_0)
         q = np.asarray(q)
@@ -220,14 +217,21 @@ class IteratedExtendedKalmanFilter:
         # Create logs
         x_k1k1_log = deque((x_0,), maxlen=len(time_vector)+2)
         p_k1k1_log = deque((p_0,), maxlen=len(time_vector)+2)
+        x_kk1_log = deque((x_0,), maxlen=len(time_vector)+2)
+        p_kk1_log = deque((p_0,), maxlen=len(time_vector)+2)
+        phi_log = deque((p_0,), maxlen=len(time_vector) + 2)
+        gamma_log = deque((p_0,), maxlen=len(time_vector) + 2)
         iter_count = deque((0,), maxlen=len(time_vector)+2)
-        # stdx_log = deque((p_0.diagonal().flatten(),), maxlen=len(time_vector)+2)
+
         # Constants
         eye_nx = np.eye(n_x)
+        c_null = np.zeros((1, n_x))
+        d_null = np.zeros((1, n_u))
 
         for k, (t_i, t_f, u_k, z_k) in tqdm(enumerate(zip(time_vector, t_f_iter, u_log, z_log)),
                                             total=len(time_vector)-1,
-                                            disable=not verbose):
+                                            disable=not verbose,
+                                            postfix="Filtering"):
             # with profile():
             dt = t_f - t_i
             # print(dt)
@@ -242,6 +246,8 @@ class IteratedExtendedKalmanFilter:
             p_kk1 = np.nan
             eta_i = np.nan
             eta_1i = x_kk1
+            phi = np.nan
+            gamma = np.nan
             for i in range(self.max_iterations):
                 # print(f"  {i}", eta_1i)
                 # Measurement prediction
@@ -297,16 +303,83 @@ class IteratedExtendedKalmanFilter:
             # Store results
             x_k1k1_log.append(x_k1k1)
             p_k1k1_log.append(p_k1k1)
-            # stdx_log.append(p_k1k1.diagonal().flatten().tolist())
+            x_kk1_log.append(x_kk1)
+            p_kk1_log.append(p_kk1)
+            phi_log.append(phi)
+            gamma_log.append(gamma)
 
-        return data.merge(xr.Dataset(
-            data_vars={
-                **{f"{x_name}_est": (("t",), np.array(x_value)) for x_name, x_value in zip(self.x_names, (*zip(*x_k1k1_log),))},
-                "p_k1k1": (("t", "dim_0", "dim_1"), np.array(p_k1k1_log)),
-                'iekf_i_count': (("t",), np.array(iter_count)),
-                # "stdx": (('t', "dim_0"), np.array(stdx_log))
-            }
-        ))
+        # Add results to the dataset and return it
+        data["p_k1k1"] = (("t", "dim_0", "dim_1"), np.array(p_k1k1_log))
+        data["x_k1k1"] = (("t", "x_idx"), np.array(x_k1k1_log))
+        data["p_kk1"] = (("t", "dim_0", "dim_1"), np.array(p_kk1_log))
+        data["x_kk1"] = (("t", "x_idx"), np.array(x_kk1_log))
+        data["phi"] = (("t", "dim_0", "dim_1"), np.array(phi_log))
+        data["gamma"] = (("t", "dim_0", "dim_1"), np.array(gamma_log))
+        data["iekf_i_count"] = (("t",), np.array(iter_count))
+
+        for x_idx, x_name in enumerate(self.x_names):
+            data[f"{x_name}_filtered"] = data.x_k1k1.isel(x_idx=x_idx)
+            data[f"{x_name}_filtered_std"] = data.p_k1k1.isel(dim_0=x_idx, dim_1=x_idx)
+
+        return data
+
+    def smooth(self,
+               data: xr.Dataset,
+               x_0: Optional[Union[np.ndarray, Sequence[float]]]=None,
+               p_0: Optional[Union[np.ndarray, Sequence[Sequence[float]]]]=None,
+               q: Optional[Union[np.ndarray, Sequence[Sequence[float]]]]=None,
+               r: Optional[Union[np.ndarray, Sequence[Sequence[float]]]]=None,
+               verbose=False):
+        """
+        Smooth the data using an extended RTS smoother.
+
+        :param data: Data to smooth. It does not neccesaraly need to contain the
+                     results for the forward IEKF results.
+        :param x_0: Initial state. Only required if the forward pass needs to be run.
+        :param p_0: Initial covariance matrix. Only required if the forward pass needs to be run.
+        :param q: System noise matrix. Only required if the forward pass needs to be run.
+        :param r: Input noise matrix. Only required if the forward pass needs to be run.
+        :param verbose: True to show the progressbar.
+        :return:
+        """
+
+        # Check if we need to run the filter and run it if so.
+        if not ({"p_k1k1", "x_k1k1", "x_kk1", "p_kk1", "phi"} <= set(data.data_vars)):
+            # Run the IKEF for the forward pass.
+            data = self.filter(data, x_0, p_0, q, r, verbose)
+
+        xs_log = deque((data.x_k1k1.isel(t=-1).values,))
+        ps_log = deque((data.p_k1k1.isel(t=-1).values,))
+
+        for k in trange(len(data.t) - 1, 0, -1, disable=not verbose, postfix="Smoothing"):
+            p_kk = data.p_k1k1.isel(t=k-1).values
+            x_kk = data.x_k1k1.isel(t=k-1).values
+            x_kk1 = data.x_kk1.isel(t=k).values
+            p_kk1 = data.p_kk1.isel(t=k).values
+            phi_k = data.phi.isel(t=k).values
+            xs_k1 = xs_log[-1]
+            ps_k1 = ps_log[-1]
+
+            c_k = p_kk @ phi_k.T @ np.linalg.pinv(p_kk1)
+
+            xs_k = x_kk + c_k @ (xs_k1 - x_kk1)
+            ps_k = p_kk + c_k @ (ps_k1 - p_kk1) @ c_k.T
+
+            xs_log.append(xs_k)
+            ps_log.append(ps_k)
+
+        data["xs"] = (("t", "x_idx"), np.array(tuple(reversed(xs_log))))
+        data["ps"] = (("t", "dim_0", "dim_1"), np.array(tuple(reversed(ps_log))))
+
+        for x_idx, x_name in enumerate(self.x_names):
+            data[f"{x_name}_smoothed"] = data.xs.isel(x_idx=x_idx)
+            data[f"{x_name}_smoothed_std"] = data.ps.isel(dim_0=x_idx, dim_1=x_idx)
+        return data
+
+
+
+
+
 
 
 # def c2d(a: np.ndarray, b: np.ndarray, dt: float) -> Tuple[np.ndarray, np.ndarray]:
