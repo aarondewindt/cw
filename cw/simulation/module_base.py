@@ -1,7 +1,8 @@
+from abc import ABC, abstractmethod
 from typing import Optional, Sequence
 
 
-class ModuleBase:
+class ModuleBase(ABC):
     def __init__(self, *,
                  target_time_step: Optional[float]=None,
                  is_discreet: bool=False,
@@ -22,13 +23,21 @@ class ModuleBase:
     def initialize(self, simulation):
         self.simulation = simulation
 
-    def run_step(self):
+    def run_step(self, is_last):
         self.s = self.simulation.states
-        self.step()
+        self.step(is_last)
         del self.s
 
-    def step(self):
+    def run_end(self):
+        self.s = self.simulation.states
+        self.end()
+        del self.s
+
+    def step(self, is_last):
         pass
 
     def end(self):
+        pass
+
+    def get_attributes(self):
         pass

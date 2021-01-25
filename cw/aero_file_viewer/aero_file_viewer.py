@@ -4,7 +4,8 @@ from matplotlib.ticker import LinearLocator, FormatStrFormatter
 import matplotlib.pyplot as plt
 import numpy as np
 
-# I think this was written by Jort Groen.
+
+__author__ = ['Jort Groen']
 
 
 class Parameter:

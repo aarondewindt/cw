@@ -48,7 +48,8 @@ def determine_serialization(file_path: Union[os.PathLike, str, PurePath],
                             default_is_gzipped=False) -> Tuple[Any, bool, bool]:
     """
     Determines which serializer needs to be used to read or save a file based on its
-    extension(s).
+    extension(s). Supports `.pickle`, `.yaml`, `.yml`, `.msgp`, `.json` and `.mat`. An
+    optional additional `.gz` extension indicates the file is compressed using gzip.
 
     :param file_path: Path to file to open.
     :param default_serializer: Default serializer to use if the file extension is not known.
@@ -101,7 +102,9 @@ def flex_load(file_path: Union[str, os.PathLike, PurePath],
               default_is_gzipped=False) -> Union[dict, list]:
     """
     Determines which serializer is needed to open the file and whether it's compressed by
-    looking at the file extension.
+    looking at the file extension. Supports `.pickle`, `.yaml`, `.yml`, `.msgp`, `.json`
+    and `.mat`. An optional additional `.gz` extension indicates the file is compressed
+    using gzip.
 
     :param file_path: Path to the file to load.
     :param default_serializer: Default serializer to use if the extension is unknown.
@@ -145,6 +148,8 @@ def flex_dump(obj: Any,
               **kwargs):
     """
     Dumps object hierarchies to a file. The serialization and compression is chosen based on the file extension.
+    Supports `.pickle`, `.yaml`, `.yml`, `.msgp`, `.json` and `.mat`. An optional additional `.gz` extension
+    indicates the file is compressed using gzip.
 
     :param obj: Object hierarchy to dump.
     :param file_path: Path to the file to dump the data to.

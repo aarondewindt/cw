@@ -1,7 +1,7 @@
 from contextlib import contextmanager
 from copy import deepcopy, copy
-from typing import Sequence, List, Set
-from dataclasses import fields, is_dataclass
+from typing import Sequence, List, Set, Type, TypeVar
+from dataclasses import fields, is_dataclass, replace as dataclasses_replace
 from math import fmod
 
 import numpy as np
@@ -9,8 +9,10 @@ import numpy as np
 from cw.simulation.integrator_base import IntegratorBase
 from cw.simulation.states_base import StatesBase
 from cw.simulation.module_base import ModuleBase
-from cw.simulation.logging import Logging
+from cw.simulation.logging import LoggerBase
 from cw.simulation.exception import SimulationError
+
+T = TypeVar('T', bound=ModuleBase)
 
 
 class Simulation:
@@ -18,19 +20,22 @@ class Simulation:
                  states_class: type,
                  integrator: IntegratorBase,
                  modules: Sequence[ModuleBase],
-                 logging: Logging,
+                 logging: LoggerBase,
                  initial_state_values=None):
-        self.integrator = integrator
-        self.modules = modules
-        self.logging = logging
+        self.integrator: IntegratorBase = integrator
+        self.modules: Sequence[ModuleBase] = modules
+        self.logging: LoggerBase = logging
         if is_dataclass:
             self.states_class = states_class
         else:
             raise TypeError("The states class must be a dataclass.")
         self.states: StatesBase = states_class(**(initial_state_values or {}))
 
+        self.stashed_states = None
+
         self.discrete_modules: List[ModuleBase] = []
         self.continuous_modules: List[ModuleBase] = []
+        self.initialize()
 
     @contextmanager
     def temporary_states(self, temporary=True):
@@ -42,6 +47,13 @@ class Simulation:
             self.states = original_states
         else:
             yield
+
+    def stash_states(self):
+        self.stashed_states = deepcopy(self.states)
+
+    def restore_states(self):
+        if self.stashed_states:
+            self.states = deepcopy(self.stashed_states)
 
     def initialize(self):
         self.integrator.initialize(self)
@@ -64,8 +76,6 @@ class Simulation:
                     raise SimulationError(
                         f"Missing required states for module '{module.name}': {', '.join(states_set)}")
 
-            module.initialize(self)
-
         time_field_valid = False
         for field in fields(self.states):
             field_value = getattr(self.states, field.name)
@@ -82,13 +92,19 @@ class Simulation:
         if not time_field_valid:
             raise SimulationError("The time field 't' in the states dataclass is missing or of invalid type.")
 
+        for module in self.modules:
+            module.initialize(self)
+
     def run(self, n_steps):
-        return self.integrator.run(n_steps)
+        for module in self.modules:
+            module.initialize(self)
+        result = self.integrator.run(n_steps)
+        return result
 
     def stop(self):
         return self.integrator.stop()
 
-    def get_y_dot(self, t, y, *, temporary=True):
+    def get_y_dot(self, t, y, is_last, *, temporary=True):
         """
         Executes all of the continuous modules and returns the state vector derivative.
         """
@@ -97,7 +113,7 @@ class Simulation:
             self.states.set_t_y(t, y)
             # Run continuous modules
             for module in self.continuous_modules:
-                module.run_step()
+                module.run_step(is_last)
             # Get the state vector derivative.
             return self.states.get_y_dot()
 
@@ -113,7 +129,7 @@ class Simulation:
         for module in self.discrete_modules:
             module.run_step()
 
-    def find_modules_by_type(self, klass):
+    def find_modules_by_type(self, klass: Type[T]) -> List[T]:
         result = []
         for module in self.modules:
             if isinstance(module, klass):

@@ -19,5 +19,8 @@ class IntegratorBase:
     def stop(self):
         self.running = False
 
-    def run_single_step(self, step_idx: int, t1: float):
+    def run_single_step(self, step_idx: int, t1: float, last_iteration: bool):
+        raise NotImplemented()
+
+    def reset(self, states=False):
         raise NotImplemented()
