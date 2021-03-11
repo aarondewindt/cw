@@ -2,28 +2,31 @@ name: cw
 dependencies:
   - python>=3.8
   - pip
-  - numpy
-  - scipy
-  - pyproj
   - slycot
-  - control
-  - numba>=0.46.0
   - pip:
-      - numpy-quaternion
-      - pyserial-asyncio
-      - msgpack
-      - msgpack_numpy
-      - PyYAML
-      - python-dateutil
-      - cerberus
-      - pyserial
-      - tqdm
-      - openpyxl
-      - psutil
-      - requests
-      - matplotlib
-      - pandas
-      - xarray
-      - sympy
-      - gym
-      - semver
+    - numpy
+    - scipy
+    - msgpack
+    - PyYAML
+    - python-dateutil
+    - cerberus
+    - pyserial
+    - pyserial-asyncio
+    - tqdm
+    - openpyxl
+    - psutil
+    - pyproj
+    - requests
+    - matplotlib
+    - xarray
+    - sympy
+    - control
+    - msgpack_numpy
+    - pandas
+    - numba>=0.46.0
+    - numpy-quaternion
+    - gym
+    - semver
+    - markupsafe
+    - html2text
+    - slycot
