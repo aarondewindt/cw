@@ -1,11 +1,15 @@
 import numpy as np
 import xarray as xr
 import sympy as sp
+import control as ct
+
 from typing import Callable, Optional, Sequence, Union, Tuple
 from collections import deque
 from textwrap import indent
-from tqdm import tqdm
+from tqdm.auto import tqdm
 from scipy.linalg import expm
+from IPython.display import display, Markdown
+from scipy.signal import cont2discrete
 
 
 class IteratedExtendedKalmanFilter:
@@ -65,7 +69,7 @@ class IteratedExtendedKalmanFilter:
         self.fx_func: Callable = sp.lambdify(self.txu, self.fx)
         self.hx_func: Callable = sp.lambdify(self.txu, self.hx)
 
-    def __str__(self):
+    def __repr__(self):
         return f"IteratedExtendedKalmanFilter:\n" + indent(
             f"x:\n{indent(sp.pretty(self.x, wrap_line=False), '  ')}\n"
             f"z:\n{indent(sp.pretty(self.z, wrap_line=False), '  ')}\n"
@@ -76,17 +80,25 @@ class IteratedExtendedKalmanFilter:
             f"fx:\n{indent(sp.pretty(self.fx, wrap_line=False), '  ')}\n"
             f"hx:\n{indent(sp.pretty(self.hx, wrap_line=False), '  ')}\n", '  ')
 
-    def print_latex(self, jacobians=False):
-        a = f"x:\n{indent(sp.latex(self.x), '  ')}\n" \
-            f"z:\n{indent(sp.latex(self.z), '  ')}\n" \
-            f"u:\n{indent(sp.latex(self.u), '  ')}\n" \
-            f"f:\n{indent(sp.latex(self.f), '  ')}\n" \
-            f"g:\n{indent(sp.latex(self.g), '  ')}\n" \
-            f"h:\n{indent(sp.latex(self.h), '  ')}\n"
+    def _ipython_display_(self):
+        display(Markdown(self.latex(True)))
+
+    def latex(self, jacobians=False):
+        def to_latex(name, equation):
+            return f"$${name} = {sp.latex(equation)}$$"
+
+        equations = [("x", self.x),
+                     ("z", self.z),
+                     ("u", self.u),
+                     ("f(\dots)", self.f),
+                     ("g(\dots)", self.g),
+                     ("h(\dots)", self.h)]
+
         if jacobians:
-            a += f"fx:\n{indent(sp.pretty(self.fx, wrap_line=False), '  ')}\n" \
-                 f"hx:\n{indent(sp.pretty(self.hx, wrap_line=False), '  ')}\n", '  '
-        print(a)
+            equations.extend([('F_x(\dots)', self.fx),
+                              ('H_x(\dots)', self.hx)])
+
+        return "  \n".join(to_latex(name, equation) for name, equation in equations)
 
     def sim(self,
             *,
@@ -172,6 +184,9 @@ class IteratedExtendedKalmanFilter:
         n_u = len(self.u)
         n_z = len(self.z)
 
+        c_null = np.zeros((1, n_x))
+        d_null = np.zeros((1, n_u))
+
         # Make sure p_0, Q and R are ndarray
         p_0 = np.asarray(p_0)
         q = np.asarray(q)
@@ -233,9 +248,12 @@ class IteratedExtendedKalmanFilter:
                 z_p = self.h_func(t_i, *eta_1i, *u_k).flatten()
 
                 # Calculate Phi and Gamma
-                phi, gamma = c2d(
-                    self.fx_func(t_i, *eta_1i, *u_k),
-                    self.g_func(t_i, *eta_1i, *u_k),
+                phi, gamma, _, __, ___ = cont2discrete(
+                    (self.fx_func(t_i, *eta_1i, *u_k),
+                     self.g_func(t_i, *eta_1i, *u_k),
+                     c_null,
+                     d_null,
+                     ),
                     dt
                 )
 
@@ -291,26 +309,26 @@ class IteratedExtendedKalmanFilter:
         ))
 
 
-def c2d(a: np.ndarray, b: np.ndarray, dt: float) -> Tuple[np.ndarray, np.ndarray]:
-    """
-    Calculates a discrete state space system from the continuous one.
-
-    :param a: Continuous A matrix
-    :param b: Continuous B matrix
-    :param dt: Time step
-    :return: Tuple with the discrete A and B matrices.
-    """
-    m, na = a.shape
-    m, nb = b.shape
-
-    s = expm(
-        np.vstack((
-            np.hstack((a, b)) * dt,
-            np.zeros((nb, na+nb))
-        ))
-    )
-
-    return s[:na, :na], s[:na, na:na+nb]
+# def c2d(a: np.ndarray, b: np.ndarray, dt: float) -> Tuple[np.ndarray, np.ndarray]:
+#     """
+#     Calculates a discrete state space system from the continuous one.
+#
+#     :param a: Continuous A matrix
+#     :param b: Continuous B matrix
+#     :param dt: Time step
+#     :return: Tuple with the discrete A and B matrices.
+#     """
+#     m, na = a.shape
+#     m, nb = b.shape
+#
+#     s = expm(
+#         np.vstack((
+#             np.hstack((a, b)) * dt,
+#             np.zeros((nb, na+nb))
+#         ))
+#     )
+#
+#     return s[:na, :na], s[:na, na:na+nb]
 
 
 def rk4(f: Callable,
