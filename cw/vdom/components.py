@@ -1,6 +1,8 @@
 from typing import Union, Optional
 
-from markupsafe import Markup
+from markupsafe import Markup, escape as ms_escape
+
+
 
 from .typing import HTMLProtocol, ReprHTMLProtocol
 from .html import table, tr, th, td, tbody, thead, tfoot, caption as caption_component
@@ -48,6 +50,12 @@ def tabulate(data, header=None, row_header=None, caption=None):
     :param caption: Caption to add on top of the table
     :return: `cw.vdom.table` component with the new table.
     """
+    # If data is a dictionary then set the keys as the row headers
+    # and the values as the table data.
+    if isinstance(data, dict):
+        row_header = list(data.keys())
+        data = np.array(tuple(data.values()))[:, None]
+
     # Make sure the data is 2d.
     data = np.atleast_2d(data)
 
