@@ -1,0 +1,52 @@
+.cw_vdom_accordion {
+  display: block;
+  margin: auto;
+  position: relative;
+  width: 100%;
+}
+
+.cw_vdom_accordion input.sections {
+  display:none;
+}
+
+.cw_vdom_accordion section {
+  display: block;
+}
+
+.cw_vdom_accordion section label {
+  background: var(--jp-layout-color2);
+  cursor: pointer;
+  display: block;
+  font-size: var(--jp-ui-font-size2);
+  color: var(--jp-ui-font-color2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: normal;
+  padding: 5px 5px;
+  position: relative;
+  width: 100%;
+  z-index:100;
+}
+
+.cw_vdom_accordion section label:hover {
+  background: var(--jp-layout-color1);
+  color: var(--jp-ui-font-color1);
+}
+
+.cw_vdom_accordion section article {
+  display: none;
+  /*left: 200px;*/
+  padding: var(--jp-cell-padding);
+  min-width: 300px;
+  position: relative;
+  top: 0;
+}
+
+.cw_vdom_accordion input.sections:checked + label {
+  font-weight: bolder;
+}
+
+.cw_vdom_accordion input.sections:checked ~ article {
+  display: block;
+}

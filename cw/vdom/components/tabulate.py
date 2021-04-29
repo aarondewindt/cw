@@ -1,43 +1,5 @@
-from typing import Union, Optional
-
-from markupsafe import Markup, escape as ms_escape
-
-
-
-from .typing import HTMLProtocol, ReprHTMLProtocol
-from .html import table, tr, th, td, tbody, thead, tfoot, caption as caption_component
+from ..html import table, tr, th, td, tbody, thead, tfoot, caption as caption_component
 import numpy as np
-
-
-def safe(content: Union[HTMLProtocol, ReprHTMLProtocol, str]):
-    """
-    Mark text as safe. It will not be escaped when rendering the HTML code.
-    If the object has a `_repr_html_` or `__html__` function it will returned
-    without making changes.
-
-    :param content: Content to make as safe.
-    :return: A `markupsafe.Markup` string.
-    """
-    if hasattr(content, "_repr_html_"):
-        return content
-    elif hasattr(content, "__html__"):
-        return content
-    else:
-        return Markup(content)
-
-
-def latex_eq(equation, displayed_mode=False):
-    """
-    Wrap the equation around `$` or `$$` whether it needs to be in displayed mode or not.
-
-    :param equation:
-    :param displayed_mode:
-    :return:
-    """
-    if displayed_mode:
-        return Markup(f"$${equation}$$")
-    else:
-        return Markup(f"${equation}$")
 
 
 def tabulate(data, header=None, row_header=None, caption=None):
@@ -108,3 +70,4 @@ def tabulate(data, header=None, row_header=None, caption=None):
             ) for row_h, row_data in zip(row_header, data))
         ),
     )
+
