@@ -166,3 +166,24 @@ def tr_ea(chi, gamma, mu):
     """
     
     return tr_ae(chi, gamma, mu).transpose()
+
+
+def tr_sb(alpha_0):
+    """
+    Transformation from the body to stability frame.
+
+    :param alpha_0:
+    :return:
+    """
+    ca = math.cos(alpha_0)
+    sa = math.sin(alpha_0)
+    return np.array([[ca, 0, -sa], [0, 1, 0], [sa, 0, ca]])
+
+def tr_bs(alpha_0):
+    """
+    Transformation from the stability to body frame.
+
+    :param alpha_0:
+    :return:
+    """
+    return tr_sb(alpha_0).transpose()

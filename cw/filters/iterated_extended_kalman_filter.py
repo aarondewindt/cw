@@ -220,7 +220,7 @@ class IteratedExtendedKalmanFilter:
         x_kk1_log = deque((x_0,), maxlen=len(time_vector)+2)
         p_kk1_log = deque((p_0,), maxlen=len(time_vector)+2)
         phi_log = deque((p_0,), maxlen=len(time_vector) + 2)
-        gamma_log = deque((p_0,), maxlen=len(time_vector) + 2)
+        # gamma_log = deque((p_0,), maxlen=len(time_vector) + 2)
         iter_count = deque((0,), maxlen=len(time_vector)+2)
 
         # Constants
@@ -247,7 +247,7 @@ class IteratedExtendedKalmanFilter:
             eta_i = np.nan
             eta_1i = x_kk1
             phi = np.nan
-            gamma = np.nan
+            # gamma = np.nan
             for i in range(self.max_iterations):
                 # print(f"  {i}", eta_1i)
                 # Measurement prediction
@@ -306,20 +306,20 @@ class IteratedExtendedKalmanFilter:
             x_kk1_log.append(x_kk1)
             p_kk1_log.append(p_kk1)
             phi_log.append(phi)
-            gamma_log.append(gamma)
+            # gamma_log.append(gamma)
 
         # Add results to the dataset and return it
-        data["p_k1k1"] = (("t", "dim_0", "dim_1"), np.array(p_k1k1_log))
-        data["x_k1k1"] = (("t", "x_idx"), np.array(x_k1k1_log))
-        data["p_kk1"] = (("t", "dim_0", "dim_1"), np.array(p_kk1_log))
-        data["x_kk1"] = (("t", "x_idx"), np.array(x_kk1_log))
-        data["phi"] = (("t", "dim_0", "dim_1"), np.array(phi_log))
-        data["gamma"] = (("t", "dim_0", "dim_1"), np.array(gamma_log))
+        data["iekf_p_k1k1"] = (("t", "iekf_dim_0", "iekf_dim_1"), np.array(p_k1k1_log))
+        data["iekf_x_k1k1"] = (("t", "iekf_x_idx"), np.array(x_k1k1_log))
+        data["iekf_p_kk1"] = (("t", "iekf_dim_0", "iekf_dim_1"), np.array(p_kk1_log))
+        data["iekf_x_kk1"] = (("t", "iekf_x_idx"), np.array(x_kk1_log))
+        data["iekf_phi"] = (("t", "iekf_dim_0", "iekf_dim_1"), np.array(phi_log))
+        # data["iekf_gamma"] = (("t", "iekf_dim_0", "iekf_dim_1"), np.array(gamma_log))
         data["iekf_i_count"] = (("t",), np.array(iter_count))
 
         for x_idx, x_name in enumerate(self.x_names):
-            data[f"{x_name}_filtered"] = data.x_k1k1.isel(x_idx=x_idx)
-            data[f"{x_name}_filtered_std"] = data.p_k1k1.isel(dim_0=x_idx, dim_1=x_idx)
+            data[f"{x_name}_filtered"] = data.iekf_x_k1k1.isel(iekf_x_idx=x_idx)
+            data[f"{x_name}_filtered_std"] = data.iekf_p_k1k1.isel(iekf_dim_0=x_idx, iekf_dim_1=x_idx)
 
         return data
 
@@ -344,19 +344,19 @@ class IteratedExtendedKalmanFilter:
         """
 
         # Check if we need to run the filter and run it if so.
-        if not ({"p_k1k1", "x_k1k1", "x_kk1", "p_kk1", "phi"} <= set(data.data_vars)):
+        if not ({"iekf_p_k1k1", "iekf_x_k1k1", "iekf_x_kk1", "iekf_p_kk1", "iekf_phi"} <= set(data.data_vars)):
             # Run the IKEF for the forward pass.
             data = self.filter(data, x_0, p_0, q, r, verbose)
 
-        xs_log = deque((data.x_k1k1.isel(t=-1).values,))
-        ps_log = deque((data.p_k1k1.isel(t=-1).values,))
+        xs_log = deque((data.iekf_x_k1k1.isel(t=-1).values,))
+        ps_log = deque((data.iekf_p_k1k1.isel(t=-1).values,))
 
         for k in trange(len(data.t) - 1, 0, -1, disable=not verbose, postfix="Smoothing"):
-            p_kk = data.p_k1k1.isel(t=k-1).values
-            x_kk = data.x_k1k1.isel(t=k-1).values
-            x_kk1 = data.x_kk1.isel(t=k).values
-            p_kk1 = data.p_kk1.isel(t=k).values
-            phi_k = data.phi.isel(t=k).values
+            p_kk = data.iekf_p_k1k1.isel(t=k-1).values
+            x_kk = data.iekf_x_k1k1.isel(t=k-1).values
+            x_kk1 = data.iekf_x_kk1.isel(t=k).values
+            p_kk1 = data.iekf_p_kk1.isel(t=k).values
+            phi_k = data.iekf_phi.isel(t=k).values
             xs_k1 = xs_log[-1]
             ps_k1 = ps_log[-1]
 
@@ -368,40 +368,13 @@ class IteratedExtendedKalmanFilter:
             xs_log.append(xs_k)
             ps_log.append(ps_k)
 
-        data["xs"] = (("t", "x_idx"), np.array(tuple(reversed(xs_log))))
-        data["ps"] = (("t", "dim_0", "dim_1"), np.array(tuple(reversed(ps_log))))
+        data["iekf_xs"] = (("t", "iekf_x_idx"), np.array(tuple(reversed(xs_log))))
+        data["iekf_ps"] = (("t", "iekf_dim_0", "iekf_dim_1"), np.array(tuple(reversed(ps_log))))
 
         for x_idx, x_name in enumerate(self.x_names):
-            data[f"{x_name}_smoothed"] = data.xs.isel(x_idx=x_idx)
-            data[f"{x_name}_smoothed_std"] = data.ps.isel(dim_0=x_idx, dim_1=x_idx)
+            data[f"{x_name}_smoothed"] = data.iekf_xs.isel(iekf_x_idx=x_idx)
+            data[f"{x_name}_smoothed_std"] = data.iekf_ps.isel(iekf_dim_0=x_idx, iekf_dim_1=x_idx)
         return data
-
-
-
-
-
-
-
-# def c2d(a: np.ndarray, b: np.ndarray, dt: float) -> Tuple[np.ndarray, np.ndarray]:
-#     """
-#     Calculates a discrete state space system from the continuous one.
-#
-#     :param a: Continuous A matrix
-#     :param b: Continuous B matrix
-#     :param dt: Time step
-#     :return: Tuple with the discrete A and B matrices.
-#     """
-#     m, na = a.shape
-#     m, nb = b.shape
-#
-#     s = expm(
-#         np.vstack((
-#             np.hstack((a, b)) * dt,
-#             np.zeros((nb, na+nb))
-#         ))
-#     )
-#
-#     return s[:na, :na], s[:na, na:na+nb]
 
 
 def rk4(f: Callable,

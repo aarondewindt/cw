@@ -3,3 +3,4 @@ from cw.filters.smooth_signal import smooth_signal
 from cw.filters.iterated_extended_kalman_filter import IteratedExtendedKalmanFilter
 from cw.filters.unscented_kalman_filter import UnscentedKalmanFilter as UnscentedKalmanFilterOld
 from cw.filters.unscented_kalman_filter_new import UnscentedKalmanFilter
+from cw.filters.kalman_plotting import plot_state
