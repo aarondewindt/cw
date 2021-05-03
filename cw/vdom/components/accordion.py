@@ -25,8 +25,10 @@ def random_string():
 def accordion(content: Dict[Any, Any], multiple=True):
     """
     Accordion component.
-
-    :param content: Dictionary whose keys are the section names and the value the section content.
+    :param content: Dictionary whose keys are the section titles and the value the section content. The keys
+                    may be a two element tuples whose first element is the section title and the second
+                    element a highlight level. The level may be `brand`, `accent`, `warn`, `error`,
+                    `success` or `info`.
     :param multiple: True to allow multiple sections to be open at the same time.
     :return: Accordion component.
     """
@@ -34,11 +36,17 @@ def accordion(content: Dict[Any, Any], multiple=True):
     input_type = "checkbox" if multiple else "radio"
     def sections():
         for i, (key, value) in enumerate(content.items()):
+            label_class = ""
+            if isinstance(key, (list, tuple)):
+                assert len(key) == 2, "The key may either be a single object or tuple/list with two elements"
+                key, level = key
+                label_class = f"cw_vdom_{level}"
+
             option_id = random_string()
             yield section(
                 input_(name=name, id=option_id, type=input_type, Class="sections", checked="true")
                     if i == 0 else input_(name=name, id=option_id, type=input_type, Class="sections"),
-                label(For=option_id, c=key),
+                label(For=option_id, Class=label_class, c=[key]),
                 article(value)
             )
 
