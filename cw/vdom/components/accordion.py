@@ -32,7 +32,7 @@ def accordion(content: Dict[Any, Any], multiple=True):
     :param multiple: True to allow multiple sections to be open at the same time.
     :return: Accordion component.
     """
-    name = random_string()
+    accordion_name = random_string()
     input_type = "checkbox" if multiple else "radio"
     def sections():
         for i, (key, value) in enumerate(content.items()):
@@ -44,8 +44,7 @@ def accordion(content: Dict[Any, Any], multiple=True):
 
             option_id = random_string()
             yield section(
-                input_(name=name, id=option_id, type=input_type, Class="sections", checked="true")
-                    if i == 0 else input_(name=name, id=option_id, type=input_type, Class="sections"),
+                input_(name=accordion_name, id=option_id, type=input_type, Class="sections"),
                 label(For=option_id, Class=label_class, c=[key]),
                 article(value)
             )

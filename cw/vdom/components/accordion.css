@@ -1,8 +1,11 @@
 .cw_vdom_accordion {
   display: block;
-  margin: auto;
+  /*margin: auto;*/
   position: relative;
   width: 100%;
+  border-left: var(--jp-border-width) solid var(--jp-border-color1);
+  border-right: var(--jp-border-width) solid var(--jp-border-color1);
+  border-bottom: var(--jp-border-width) solid var(--jp-border-color1);
 }
 
 .cw_vdom_accordion input.sections {
@@ -14,30 +17,30 @@
 }
 
 .cw_vdom_accordion section label {
+  border-top: var(--jp-border-width) solid var(--jp-border-color1);
   background: var(--jp-layout-color2);
   cursor: pointer;
   display: block;
-  font-size: var(--jp-ui-font-size2);
-  color: var(--jp-ui-font-color2);
+  font-size: var(--jp-ui-font-size1);
+  color: var(--jp-ui-font-color1);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   font-weight: normal;
-  padding: 5px 5px;
+  padding-left: 5px;
   position: relative;
-  width: 100%;
+  /*width: 100%;*/
   z-index:100;
 }
 
 .cw_vdom_accordion section label:hover {
   background: var(--jp-layout-color1);
-  color: var(--jp-ui-font-color1);
+  /*color: var(--jp-ui-font-color1);*/
 }
 
 .cw_vdom_accordion section article {
   display: none;
-  /*left: 200px;*/
-  padding: var(--jp-cell-padding);
+  padding: var(--jp-code-padding);
   min-width: 300px;
   position: relative;
   top: 0;
@@ -45,6 +48,7 @@
 
 .cw_vdom_accordion input.sections:checked + label {
   font-weight: bolder;
+  border-bottom: var(--jp-border-width) solid var(--jp-border-color1);
 }
 
 .cw_vdom_accordion input.sections:checked ~ article {
@@ -54,7 +58,7 @@
 
 .cw_vdom_accordion section label.cw_vdom_brand {
   background: var(--jp-brand-color2);
-  color: var(--jp-ui-inverse-font-color2);
+  color: var(--jp-ui-inverse-font-color1);
 }
 .cw_vdom_accordion section label.cw_vdom_brand:hover {
   background: var(--jp-brand-color1);
@@ -64,7 +68,7 @@
 
 .cw_vdom_accordion section label.cw_vdom_accent {
   background: var(--jp-accent-color2);
-  color: var(--jp-ui-inverse-font-color2);
+  color: var(--jp-ui-inverse-font-color1);
 }
 .cw_vdom_accordion section label.cw_vdom_accent:hover {
   background: var(--jp-accent-color1);
@@ -74,7 +78,7 @@
 
 .cw_vdom_accordion section label.cw_vdom_warn {
   background: var(--jp-warn-color2);
-  color: var(--jp-ui-inverse-font-color2);
+  color: var(--jp-ui-inverse-font-color1);
 }
 .cw_vdom_accordion section label.cw_vdom_warn:hover {
   background: var(--jp-warn-color1);
@@ -84,7 +88,7 @@
 
 .cw_vdom_accordion section label.cw_vdom_error {
   background: var(--jp-error-color2);
-  color: var(--jp-ui-inverse-font-color2);
+  color: var(--jp-ui-inverse-font-color1);
 }
 .cw_vdom_accordion section label.cw_vdom_error:hover {
   background: var(--jp-error-color1);
@@ -94,7 +98,7 @@
 
 .cw_vdom_accordion section label.cw_vdom_success {
   background: var(--jp-success-color2);
-  color: var(--jp-ui-inverse-font-color2);
+  color: var(--jp-ui-inverse-font-color1);
 }
 .cw_vdom_accordion section label.cw_vdom_success:hover {
   background: var(--jp-success-color1);
@@ -104,7 +108,7 @@
 
 .cw_vdom_accordion section label.cw_vdom_info {
   background: var(--jp-info-color2);
-  color: var(--jp-ui-inverse-font-color2);
+  color: var(--jp-ui-inverse-font-color1);
 }
 .cw_vdom_accordion section label.cw_vdom_info:hover {
   background: var(--jp-info-color1);
