@@ -1,7 +1,4 @@
 .cw_vdom_hyr {
-    display: block;
-    position: relative;
-    width: 100%;
     font-family: monospace;
 }
 
@@ -18,7 +15,7 @@
     content: "\00a0";
 }
 
-.cw_vdom_hyr_item > label + div {
+.cw_vdom_hyr_item > div {
     display: inline-block;
 }
 
