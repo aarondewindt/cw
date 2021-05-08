@@ -7,13 +7,13 @@ import string
 from ..html import style_, div, section, input_, article, label
 
 # From: https://codepen.io/CameronSchuyler/pen/OpOpWo
-vertical_tabs_css = """
-"""
+
 
 # @lru_cache(None)
 def load_css():
     with (Path(__file__).parent / "accordion.css").open("r") as f:
         return style_(f.read())
+
 
 def random_string():
     """
@@ -21,6 +21,7 @@ def random_string():
     :return: string with 10 random lower case characters
     """
     return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))
+
 
 def accordion(content: Dict[Any, Any], multiple=True):
     """
