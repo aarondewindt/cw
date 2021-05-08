@@ -9,16 +9,15 @@ from pathlib import Path
 from markupsafe import escape
 
 
-from ..html import style_, div, section, input_, article, label, pre, span, br
+from ..html import style, div, input_, label, span
 from .safe import safe
-from .tabulate import tabulate
-from ..attributes import element_style
+from ..attributes import css
 
 
 @lru_cache(None)
 def load_css():
     with (Path(__file__).parent / "hyr.css").open("r") as f:
-        return style_(safe(f.read()))
+        return style(safe(f.read()))
 
 
 def random_string():

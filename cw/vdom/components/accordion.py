@@ -4,7 +4,7 @@ from pathlib import Path
 import random
 import string
 
-from ..html import style_, div, section, input_, article, label
+from ..html import style, div, section, input_, article, label
 
 # From: https://codepen.io/CameronSchuyler/pen/OpOpWo
 
@@ -12,7 +12,7 @@ from ..html import style_, div, section, input_, article, label
 # @lru_cache(None)
 def load_css():
     with (Path(__file__).parent / "accordion.css").open("r") as f:
-        return style_(f.read())
+        return style(f.read())
 
 
 def random_string():
