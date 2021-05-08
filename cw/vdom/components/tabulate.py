@@ -1,5 +1,8 @@
-from ..html import table, tr, th, td, tbody, thead, tfoot, caption as caption_component
+from ..html import table, tr, th, td, tbody, thead, caption as caption_component
 import numpy as np
+
+
+# TODO: Add footer option to table.
 
 
 def tabulate(data, header=None, row_header=None, caption=None):

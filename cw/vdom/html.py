@@ -105,4 +105,4 @@ menu = create_component('menu')
 menuitem = create_component('menuitem')
 summary = create_component('summary')
 
-style_ = create_component('style')
+style = create_component('style')

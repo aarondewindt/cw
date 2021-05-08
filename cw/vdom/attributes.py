@@ -55,5 +55,8 @@ def element_style(**kwargs):
     return Style(**kwargs)
 
 
+css = element_style
+
+
 def data(name, value):
     return Attribute.from_value(f"data_{name}", value)
