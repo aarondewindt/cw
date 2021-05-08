@@ -51,7 +51,7 @@ def attr(name, value):
     return Attribute.from_value(name, value)
 
 
-def style(**kwargs):
+def element_style(**kwargs):
     return Style(**kwargs)
 
 

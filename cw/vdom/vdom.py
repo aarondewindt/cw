@@ -12,13 +12,17 @@ class VDOM:
     def __init__(self,
                  tag_name: str,
                  attributes: Optional[Dict[str, Attribute]]=None,
-                 children: Optional[Sequence[Union['VDOM', HTMLProtocol, ReprHTMLProtocol, str]]]=None):
+                 children: Optional[Sequence[Union['VDOM', HTMLProtocol, ReprHTMLProtocol, str]]]=None,
+                 doctype: Optional[str]=None):
         self.tag_name = tag_name
         self.attributes = attributes or {}
         self.children = children or []
+        self.doctype = doctype
 
-    def to_html(self):
+    def to_html(self, is_child=False):
         with StringIO() as out:
+            if (self.doctype is not None) and (not is_child):
+                out.write(f"<!DOCTYPE {escape(self.doctype)}>\n")
 
             out.write(f"<{escape(self.tag_name)}")
 
@@ -31,7 +35,7 @@ class VDOM:
 
             for child in self.children:
                 if isinstance(child, VDOM):
-                    out.write(child._repr_html_())
+                    out.write(child.to_html(True))
                 elif hasattr(child, "_repr_html_"):
                     out.write(Markup(child._repr_html_()))
                 else:
@@ -48,7 +52,7 @@ class VDOM:
         return html2text.html2text(self.to_html())
 
 
-def create_component(tag_name: str, allow_children=True):
+def create_component(tag_name: str, allow_children=True, doctype=None):
     def _component(*children: Sequence[Union['VDOM', HTMLProtocol, ReprHTMLProtocol, str, Attribute]],
                    c: Optional[Sequence[Union['VDOM', HTMLProtocol, ReprHTMLProtocol, str, Attribute]]]=None,
                    **attributes: Dict[str, Union[str, bool, HTMLProtocol]]):
@@ -71,7 +75,7 @@ def create_component(tag_name: str, allow_children=True):
         if not allow_children and children:
             raise ValueError(f"<{tag_name}/> cannot have children")
 
-        return VDOM(tag_name, attribute_objects, children)
+        return VDOM(tag_name, attribute_objects, children, doctype)
 
     return _component
 
