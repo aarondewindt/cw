@@ -11,7 +11,7 @@ from markupsafe import escape
 
 from ..html import style, div, input_, label, span
 from .safe import safe
-from ..attributes import css
+from ..vdom import VDOM
 
 
 @lru_cache(None)
@@ -28,13 +28,23 @@ def random_string():
     return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))
 
 
-def hyr(content, show_type=True):
+def hyr(content, show_type=True, title="", collapsed=False, root_type=None):
     _, tp, element = hyr_process(content, show_type)
-    return div(load_css(), tp, element, Class="cw_vdom_hyr")
+
+    if root_type is None:
+        root_type = tp
+    else:
+        root_type = span(f"{type_fullname(root_type)}:", Class="cw_vdom_hyr_type")
+
+    option_id = random_string()
+    return div(load_css(),
+               input_(type="checkbox", id=option_id, checked=not collapsed),
+               label(f"{title} ", For=option_id), root_type if show_type else "",
+               div(element),
+               Class="cw_vdom_hyr cw_vdom_hyr_item")
 
 
-def fullname(o):
-    klass = o.__class__
+def type_fullname(klass):
     module = klass.__module__
     if module == 'builtins':
         return klass.__qualname__
@@ -43,7 +53,7 @@ def fullname(o):
 
 def hyr_process(content, show_type):
     if show_type:
-        type_element = span(f"{fullname(content)}:", Class="cw_vdom_hyr_type")
+        type_element = span(f"{type_fullname(content.__class__)}:", Class="cw_vdom_hyr_type")
     else:
         type_element = ""
 
