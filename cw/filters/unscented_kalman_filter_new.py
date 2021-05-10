@@ -13,7 +13,7 @@ from scipy.signal import cont2discrete
 import html2text
 
 from cw.unscented_transform import UnscentedTransform
-from cw.vdom import div, h3, style, dl, dt, dd, b, pre
+from cw.vdom import div, h3, css, dl, dt, dd, b, pre
 
 
 class UnscentedKalmanFilter:
@@ -53,7 +53,7 @@ class UnscentedKalmanFilter:
     def _repr_html_(self):
         return div(
             h3("UnscentedKalmanFilter"),
-            div(style(margin_left="2em"),
+            div(css(margin_left="2em"),
                 dl(
                     dt(b("x_names")), dd(", ".join(self.x_names)),
                     dt(b("z_names")), dd(", ".join(self.z_names)),

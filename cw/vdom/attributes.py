@@ -29,7 +29,7 @@ class Attribute:
     @property
     def markup(self) -> Markup:
         if isinstance(self._value, bool):
-            return escape(self._name).replace('_', '-')
+            return escape(self._name).replace('_', '-') if self._value else ""
         else:
             return Markup(f'{escape(self._name).replace("_", "-")}="{escape(self._value)}"')
 
@@ -51,8 +51,11 @@ def attr(name, value):
     return Attribute.from_value(name, value)
 
 
-def style(**kwargs):
+def element_style(**kwargs):
     return Style(**kwargs)
+
+
+css = element_style
 
 
 def data(name, value):

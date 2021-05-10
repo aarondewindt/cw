@@ -1,0 +1,48 @@
+.cw_vdom_hyr {
+    font-family: monospace;
+}
+
+.cw_vdom_hyr_item > input {
+    display: none;
+}
+
+.cw_vdom_hyr_item > label {
+    color: var(--jp-accent-color1);
+    font-weight: bold;
+}
+
+.cw_vdom_hyr_item > label::before {
+    content: "\00a0";
+}
+
+.cw_vdom_hyr_item > div {
+    display: inline-block;
+}
+
+.cw_vdom_hyr_item > input + label {
+    cursor: pointer;
+}
+
+.cw_vdom_hyr_item > input + label::before {
+    content: "+";
+}
+
+.cw_vdom_hyr_item > input:checked + label::before {
+    content: "-";
+}
+
+.cw_vdom_hyr_item > input ~ div {
+    display: none;
+    padding-left: 20px;
+}
+
+.cw_vdom_hyr_item > input:checked ~ div {
+    display: block;
+
+}
+
+.cw_vdom_hyr_type {
+    color: var(--jp-ui-font-color3);
+    font-size: var(--jp-ui-font-size0);
+
+}

@@ -4,6 +4,19 @@ from .vdom import create_component
 
 # From https://developer.mozilla.org/en-US/docs/Web/HTML/Element
 
+# Pages
+html = create_component("html", doctype="html")
+head = create_component("head")
+body = create_component("body")
+
+# Head
+title = create_component("title")
+meta = create_component("meta", allow_children=False)
+link = create_component("link", allow_children=False)
+script = create_component("script")
+base = create_component("base", allow_children=False)
+
+
 # Content sectioning
 address = create_component('address')
 article = create_component('article')
@@ -13,7 +26,6 @@ h1 = create_component('h1')
 h2 = create_component('h2')
 h3 = create_component('h3')
 h4 = create_component('h4')
-h5 = create_component('h5')
 h5 = create_component('h5')
 h6 = create_component('h6')
 header = create_component('header')
@@ -93,4 +105,4 @@ menu = create_component('menu')
 menuitem = create_component('menuitem')
 summary = create_component('summary')
 
-style_ = create_component('style')
+style = create_component('style')

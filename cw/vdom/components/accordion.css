@@ -1,6 +1,5 @@
 .cw_vdom_accordion {
   display: block;
-  /*margin: auto;*/
   position: relative;
   width: 100%;
   border-left: var(--jp-border-width) solid var(--jp-border-color1);
