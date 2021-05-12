@@ -15,6 +15,10 @@
     content: "\00a0";
 }
 
+.cw_vdom_hyr_item > label::after {
+    content: ": ";
+}
+
 .cw_vdom_hyr_item > div {
     display: inline-block;
 }
@@ -38,11 +42,9 @@
 
 .cw_vdom_hyr_item > input:checked ~ div {
     display: block;
-
 }
 
 .cw_vdom_hyr_type {
     color: var(--jp-ui-font-color3);
     font-size: var(--jp-ui-font-size0);
-
 }
