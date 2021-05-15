@@ -46,6 +46,12 @@ class Style(Attribute):
                                 for k, v in self._value.items()])
         return Markup(f' style="{inline_css}"')
 
+    def __getitem__(self, item):
+        return self._value[item]
+
+    def __setitem__(self, key, value):
+        self._value[key] = value
+
 
 def attr(name, value):
     return Attribute.from_value(name, value)
