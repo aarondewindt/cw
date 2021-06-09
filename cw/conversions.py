@@ -46,6 +46,9 @@ ft_to_inch = 1 / inch_to_ft
 inch_to_meter = inch_to_ft * ft_to_meter
 meter_to_inch = 1 / inch_to_meter
 
+nm_to_lbsft = 0.7375621
+lbsft_to_fm = 1 / nm_to_lbsft
+
 
 def q_to_euler(q):
     """Converts Quaternions to Euler angles.
