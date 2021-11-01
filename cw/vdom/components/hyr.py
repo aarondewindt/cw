@@ -1,9 +1,10 @@
 import random
 import string
-from collections import deque
+from collections import Iterable, Sized, Sequence, Collection
 
 from typing import Dict, Any
 import numpy as np
+import xarray as xr
 from functools import lru_cache
 from pathlib import Path
 from markupsafe import escape
@@ -11,7 +12,7 @@ from markupsafe import escape
 
 from ..html import style, div, input_, label, span
 from .safe import safe
-from ..attributes import css
+from ..vdom import VDOM
 
 
 @lru_cache(None)
@@ -28,13 +29,23 @@ def random_string():
     return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))
 
 
-def hyr(content, show_type=True):
+def hyr(content, show_type=True, title="", collapsed=False, root_type=None):
     _, tp, element = hyr_process(content, show_type)
-    return div(load_css(), tp, element, Class="cw_vdom_hyr")
+
+    if root_type is None:
+        root_type = tp
+    else:
+        root_type = span(f"{type_fullname(root_type)}:", Class="cw_vdom_hyr_type")
+
+    option_id = random_string()
+    return div(load_css(),
+               input_(type="checkbox", id=option_id, checked=not collapsed),
+               label(title, For=option_id), root_type if show_type else "",
+               div(element),
+               Class="cw_vdom_hyr cw_vdom_hyr_item")
 
 
-def fullname(o):
-    klass = o.__class__
+def type_fullname(klass):
     module = klass.__module__
     if module == 'builtins':
         return klass.__qualname__
@@ -43,7 +54,18 @@ def fullname(o):
 
 def hyr_process(content, show_type):
     if show_type:
-        type_element = span(f"{fullname(content)}:", Class="cw_vdom_hyr_type")
+        if isinstance(content, Iterable):
+            if isinstance(content, Sized):
+                try:
+                    type_element = span(f"{type_fullname(content.__class__)}[{len(content)}]:",
+                                        Class="cw_vdom_hyr_type")
+                except TypeError:
+                    type_element = span(f"{type_fullname(content.__class__)}[]:",
+                                        Class="cw_vdom_hyr_type")
+            else:
+                type_element = span(f"{type_fullname(content.__class__)}[]:", Class="cw_vdom_hyr_type")
+        else:
+            type_element = span(f"{type_fullname(content.__class__)}:", Class="cw_vdom_hyr_type")
     else:
         type_element = ""
 
@@ -53,7 +75,7 @@ def hyr_process(content, show_type):
             collapsable, tp, element_content = hyr_process(content[key], show_type)
             return div(
                 input_(type="checkbox", id=option_id) if collapsable else "",
-                label(f"{key}: ", For=option_id), tp,
+                label(key, For=option_id), tp,
                 div(element_content),
                 Class="cw_vdom_hyr_item")
 
@@ -67,32 +89,6 @@ def hyr_process(content, show_type):
         else:
             return False, type_element, span(escaped_content)
 
-    # Ordered iterables
-    elif isinstance(content, (list, tuple, deque)):
-        def process_element(idx):
-            option_id = random_string()
-            collapsable, tp, element_content = hyr_process(content[idx], show_type)
-            return div(
-                input_(type="checkbox", id=option_id) if collapsable else "",
-                label(f"[{idx}] ", For=option_id), tp,
-                div(element_content),
-                Class="cw_vdom_hyr_item")
-
-        return True, type_element, div(*[process_element(idx) for idx in range(len(content))])
-
-    # Unordered iterables
-    elif isinstance(content, set):
-        def process_element(element):
-            option_id = random_string()
-            collapsable, tp, element_content = hyr_process(element, show_type)
-            return div(
-                input_(type="checkbox", id=option_id) if collapsable else "",
-                label(f"[] ", For=option_id), tp,
-                div(element_content),
-                Class="cw_vdom_hyr_item")
-
-        return True, type_element, div(*[process_element(element) for element in content])
-
     elif isinstance(content, np.ndarray):
         if content.ndim == 1 or (content.ndim == 2 and content.shape[0] == 1):
             return False, type_element, escape(content)
@@ -101,6 +97,36 @@ def hyr_process(content, show_type):
 
     elif hasattr(content, "_repr_html_") or hasattr(content, "__html__"):
         return True, type_element, div(content)
+
+    # Iterables
+    elif isinstance(content, Iterable):
+        # Ordered iterables
+        if isinstance(content, Sequence):
+            def process_element(idx):
+                option_id = random_string()
+                collapsable, tp, element_content = hyr_process(content[idx], show_type)
+                return div(
+                    input_(type="checkbox", id=option_id) if collapsable else "",
+                    label(f"[{idx}]", For=option_id), tp,
+                    div(element_content),
+                    Class="cw_vdom_hyr_item")
+
+            return True, type_element, div(*[process_element(idx) for idx in range(len(content))])
+
+        # Unordered iterables
+        elif isinstance(content, Collection):
+            def process_element(element):
+                option_id = random_string()
+                collapsable, tp, element_content = hyr_process(element, show_type)
+                return div(
+                    input_(type="checkbox", id=option_id) if collapsable else "",
+                    label(f"[]", For=option_id), tp,
+                    div(element_content),
+                    Class="cw_vdom_hyr_item")
+
+            return True, type_element, div(*[process_element(element) for element in content])
+        else:
+            return False, type_element, div("... Unsized iterable, may contain infinite values.")
 
     else:
         escaped_content = safe(str(escape(content)).replace("\n", "<br/>"))

@@ -9,8 +9,6 @@ import numpy as np
 import math
 
 
-
-
 def tr_ci(t, omega_t=7.2921235169904e-5):
     """
     Transformation Matrix from :ref:`sec:F-I` to :ref:`sec:F-C`.
@@ -48,10 +46,10 @@ def tr_ab(alpha, beta):
     :return: Transformation matrix from body to aerodynamic frame.
     :rtype: numpy.ndarray
     """
-    
+
     sang = np.sin([alpha, beta])
     cang = np.cos([alpha, beta])
-    
+
     return np.array([[cang[1]*cang[0], sang[1], cang[1]*sang[0]],
                      [-sang[1]*cang[0], cang[1], -sang[1]*sang[0]],
                      [-sang[0], 0, cang[0]]])

@@ -9,15 +9,22 @@ def smooth_signal(signal, method="butter", **kwargs):
     Smooths a signal using the given method.
 
     :param signal: Signal to be filtered.
-    :param method: Method to be used. By default this is the
-                   5th order butterworth low-pass filter.
-    :param **kwargs: Extra parameters for the underlying method's function.
+    :param method: Method to be used. Options {`butter`, `iir`, `exp`}. By default `butter`.
+    :param kwargs: Extra parameters for the underlying method's function.
     :return: Filtered signal
     """
     if method in smoothing_methods:
         if isinstance(signal, xr.DataArray):
             data_array = signal
             signal = data_array.values
+
+        elif isinstance(signal, xr.Dataset):
+            smoothed_dataset = xr.Dataset()
+            for key in signal:
+                smoothed_data_array = smooth_signal(signal[key], method, **kwargs)
+                smoothed_dataset[smoothed_data_array.name] = smoothed_data_array
+            return smoothed_dataset
+
         else:
             data_array = None
 
@@ -34,18 +41,37 @@ def smooth_signal(signal, method="butter", **kwargs):
             return signal
 
 
-def smooth_signal_butter(signal, wn=0.01):
+def smooth_signal_butter(signal, wn=0.01, order=5):
     """
-    Smooths a signal using a 5th order Butterworth low-pass filter.
+    Smooths a signal using a Butterworth low-pass filter.
+    Applies a forwards and backwards pass, thus the smoothed
+    signal has zero-phase and twice the filter order.
 
     :param signal: Signal to be filtered.
-    :param wn: Cuttof frequency
-    :return: Filtered signal
+    :param wn: Cuttof frequency.
+    :param order: (half) Filter order.
+    :return: Filtered signal.
     """
-    butter_params = butter(5, [wn])
+    butter_params = butter(order, [wn])
     mean_signal = np.mean(signal)
     clip_signal = np.hstack((mean_signal, signal, mean_signal))
     return filtfilt(*butter_params, clip_signal)[1:-1]
+
+
+def smooth_iir(signal, b, a):
+    """
+    Smooths a signal using a IIR filter.
+    Applies a forwards and backwards pass, thus the smoothed
+    signal has zero-phase and twice the filter order.
+
+    :param signal: Signal to be filtered.
+    :param b: IIR filter b vectors.
+    :param a: IIR filter a vectors
+    :return: Filtered signal
+    """
+    mean_signal = np.mean(signal)
+    clip_signal = np.hstack((mean_signal, signal, mean_signal))
+    return filtfilt(b, a, clip_signal)[1:-1]
 
 
 def smooth_signal_exponential(signal, weight=0.8):
@@ -66,5 +92,6 @@ def smooth_signal_exponential(signal, weight=0.8):
 
 smoothing_methods = {
     "butter": smooth_signal_butter,
-    "exp": smooth_signal_exponential
+    "exp": smooth_signal_exponential,
+    "iir": smooth_iir
 }

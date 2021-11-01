@@ -40,6 +40,15 @@ pa_to_psf = 1 / psf_to_pa
 lbf_to_n = 4.4482216
 n_to_lbf = 1 / lbf_to_n
 
+inch_to_ft = 0.0833333
+ft_to_inch = 1 / inch_to_ft
+
+inch_to_meter = inch_to_ft * ft_to_meter
+meter_to_inch = 1 / inch_to_meter
+
+nm_to_lbsft = 0.7375621
+lbsft_to_fm = 1 / nm_to_lbsft
+
 
 def q_to_euler(q):
     """Converts Quaternions to Euler angles.

@@ -29,7 +29,7 @@ class Attribute:
     @property
     def markup(self) -> Markup:
         if isinstance(self._value, bool):
-            return escape(self._name).replace('_', '-')
+            return escape(self._name).replace('_', '-') if self._value else ""
         else:
             return Markup(f'{escape(self._name).replace("_", "-")}="{escape(self._value)}"')
 
@@ -45,6 +45,12 @@ class Style(Attribute):
         inline_css = "; ".join(['{}: {}'.format(escape(k).replace("_", "-"), escape(v))
                                 for k, v in self._value.items()])
         return Markup(f' style="{inline_css}"')
+
+    def __getitem__(self, item):
+        return self._value[item]
+
+    def __setitem__(self, key, value):
+        self._value[key] = value
 
 
 def attr(name, value):

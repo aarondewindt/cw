@@ -1,5 +1,5 @@
 from io import StringIO
-from typing import Dict, Sequence, Optional, Union
+from typing import Dict, Sequence, Optional, Union, Type
 
 from markupsafe import Markup, escape
 import html2text
@@ -19,7 +19,7 @@ class VDOM:
         self.children = children or []
         self.doctype = doctype
 
-    def to_html(self, is_child=False):
+    def to_xml(self, is_child=False):
         with StringIO() as out:
             if (self.doctype is not None) and (not is_child):
                 out.write(f"<!DOCTYPE {escape(self.doctype)}>\n")
@@ -32,27 +32,26 @@ class VDOM:
                 out.write(attribute.markup)
 
             out.write('>')
-
             for child in self.children:
                 if isinstance(child, VDOM):
-                    out.write(child.to_html(True))
+                    out.write(child.to_xml(True))
                 elif hasattr(child, "_repr_html_"):
                     out.write(Markup(child._repr_html_()))
                 else:
                     out.write(escape(child))
-
             out.write(f'</{escape(self.tag_name)}>')
 
             return out.getvalue()
 
-    __html__ = to_html
-    _repr_html_ = to_html
+    to_html = to_xml
+    __html__ = to_xml
+    _repr_html_ = to_xml
 
     def __repr__(self):
         return html2text.html2text(self.to_html())
 
 
-def create_component(tag_name: str, allow_children=True, doctype=None):
+def create_component(tag_name: str, allow_children=True, doctype=None, vdom_class: Type[VDOM]=VDOM):
     def _component(*children: Sequence[Union['VDOM', HTMLProtocol, ReprHTMLProtocol, str, Attribute]],
                    c: Optional[Sequence[Union['VDOM', HTMLProtocol, ReprHTMLProtocol, str, Attribute]]]=None,
                    **attributes: Dict[str, Union[str, bool, HTMLProtocol]]):
@@ -75,7 +74,7 @@ def create_component(tag_name: str, allow_children=True, doctype=None):
         if not allow_children and children:
             raise ValueError(f"<{tag_name}/> cannot have children")
 
-        return VDOM(tag_name, attribute_objects, children, doctype)
+        return vdom_class(tag_name, attribute_objects, children, doctype)
 
     return _component
 
