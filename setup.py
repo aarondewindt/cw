@@ -23,6 +23,7 @@ setup(
     packages=find_packages('.', exclude=["test"]),
     package_data={
         "cw.aero_file": ["*.yaml"],
+        "cw.vdom.components": ["*.css"],
     },
     classifiers=[
         'Programming Language :: Python :: 3 :: Only',
