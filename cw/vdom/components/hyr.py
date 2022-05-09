@@ -29,8 +29,10 @@ def random_string():
     return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))
 
 
-def hyr(content, show_type=True, title="", collapsed=False, root_type=None):
-    _, tp, element = hyr_process(content, show_type)
+def hyr(content, show_type=True, title="", root_type=None, top_n_open=1):
+    collapsed = not bool(top_n_open)
+    top_n_open = max(0, top_n_open - 1)
+    _, tp, element = hyr_process(content, show_type, top_n_open)
 
     if root_type is None:
         root_type = tp
@@ -52,7 +54,10 @@ def type_fullname(klass):
     return module + '.' + klass.__qualname__
 
 
-def hyr_process(content, show_type):
+def hyr_process(content, show_type, top_n_open):
+    collapsed = not bool(top_n_open)
+    top_n_open = max(0, top_n_open - 1)
+
     if show_type:
         if isinstance(content, Iterable):
             if isinstance(content, Sized):
@@ -72,9 +77,9 @@ def hyr_process(content, show_type):
     if isinstance(content, dict):
         def process_element(key: str):
             option_id = random_string()
-            collapsable, tp, element_content = hyr_process(content[key], show_type)
+            collapsable, tp, element_content = hyr_process(content[key], show_type, top_n_open)
             return div(
-                input_(type="checkbox", id=option_id) if collapsable else "",
+                input_(type="checkbox", id=option_id, checked=not collapsed) if collapsable else "",
                 label(key, For=option_id), tp,
                 div(element_content),
                 Class="cw_vdom_hyr_item")
@@ -104,9 +109,9 @@ def hyr_process(content, show_type):
         if isinstance(content, Sequence):
             def process_element(idx):
                 option_id = random_string()
-                collapsable, tp, element_content = hyr_process(content[idx], show_type)
+                collapsable, tp, element_content = hyr_process(content[idx], show_type, top_n_open)
                 return div(
-                    input_(type="checkbox", id=option_id) if collapsable else "",
+                    input_(type="checkbox", id=option_id, checked=not collapsed) if collapsable else "",
                     label(f"[{idx}]", For=option_id), tp,
                     div(element_content),
                     Class="cw_vdom_hyr_item")
@@ -117,9 +122,9 @@ def hyr_process(content, show_type):
         elif isinstance(content, Collection):
             def process_element(element):
                 option_id = random_string()
-                collapsable, tp, element_content = hyr_process(element, show_type)
+                collapsable, tp, element_content = hyr_process(element, show_type, top_n_open)
                 return div(
-                    input_(type="checkbox", id=option_id) if collapsable else "",
+                    input_(type="checkbox", id=option_id, checked=not collapsed) if collapsable else "",
                     label(f"[]", For=option_id), tp,
                     div(element_content),
                     Class="cw_vdom_hyr_item")
