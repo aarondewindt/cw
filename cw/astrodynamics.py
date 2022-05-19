@@ -209,7 +209,6 @@ def cartesian_to_kepler_no_anomalies_2d(r2d: Sequence[float], v2d: Sequence[floa
     return a, e
 
 
-
 def kepler_to_cartesian(a: float, e: float, i: float, raan: float, omega: float,
                         true_anomaly: Optional[float] = None,
                         eccentric_anomaly: Optional[float] = None,
