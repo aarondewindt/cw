@@ -89,7 +89,13 @@ def cartesian_to_kepler(r: Sequence[float], v: Sequence[float], mu: float = mu_e
             omega = 2 * pi - omega
         omega = limit_zero_2pi(omega)
     else:
-        omega = 0
+        e_hat = (e_vec / norm(e_vec))
+        ny_hat = [0, -1, 0]
+        omega = acos(e_hat @ ny_hat)
+        if (np.cross(ny_hat, e_vec) @ h) < 0:
+            # omega is between pi and 2pi
+            omega = 2 * pi - omega
+        omega = limit_zero_2pi(omega)
 
     # Anomalies
     true_anomaly = acos(r @ e_vec / (e * r_norm))
