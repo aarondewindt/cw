@@ -141,83 +141,12 @@ def levenshtein_two_rows_numba(a: Sequence, b: Sequence) -> int:
     return v0[-1]
 
 
-def levenshtein_two_rows_diag(a: Sequence, b: Sequence) -> int:
-    """
-    Computes the Levenshtein distance between two sequences
-    using the Wagner-Fischer algorithm. Modified to only 
-    use two rows and only compute the diagonal.
-    """
-    if len(a) < len(b):
-        c = a
-        a = b
-        b = c
-
-    m = len(a)
-    n = len(b)
-
-    v1 = np.zeros((n + 1,), dtype=int)
-    v0 = np.array(range(n + 1), dtype=int)
-
-    for i in range(m):
-        v1[0] = i + 1
-        for j in range(min(i + 2, n)):
-            deletion_cost = v0[j+1] + 1
-            insertion_cost = v1[j] + 1
-            substitution_cost = v0[j] + (0 if a[i] == b[j] else 1)
-
-            v1[j+1] = min(deletion_cost, insertion_cost, substitution_cost)
-
-        t = v0
-        v0 = v1
-        v1 = t
-
-    return v0[-1]
-
-
-@nb.jit(nopython=True, cache=True)
-def levenshtein_two_rows_diag_numba(a: Sequence, b: Sequence) -> int:
-    """
-    Computes the Levenshtein distance between two sequences
-    using the Wagner-Fischer algorithm. Modified to only 
-    use two rows and only compute the diagonal.
-
-    Optimized with numba
-    """
-    if len(a) < len(b):
-        c = a
-        a = b
-        b = c
-
-    m = len(a)
-    n = len(b)
-
-    v1 = np.zeros((n + 1,))
-    v0 = np.empty((n + 1,))
-    for j in nb.prange(n + 1):
-        v0[j] = j
-
-    for i in nb.prange(m):
-        v1[0] = i + 1
-        for j in nb.prange(min(i + 2, n)):
-            deletion_cost = v0[j+1] + 1
-            insertion_cost = v1[j] + 1
-            substitution_cost = v0[j] + (0 if a[i] == b[j] else 1)
-
-            v1[j+1] = min(deletion_cost, insertion_cost, substitution_cost)
-
-        t = v0
-        v0 = v1
-        v1 = t
-
-    return v0[-1]
-
-
 # Best performing implementations.
 # The numba implementation only works for sequence types
 # supported by numba
 # The non-numba implementation works with any sequence type.
-levenshtein = levenshtein_two_rows_diag
-levenshtein_numba = levenshtein_two_rows_diag_numba
+levenshtein = levenshtein_two_rows
+levenshtein_numba = levenshtein_two_rows_numba
 
 
 if __name__ == "__main__":
@@ -232,29 +161,30 @@ if __name__ == "__main__":
         ("abcdeg", "abkdef", 2),
         ("abcdeg22", "abkdef", 4),
         ("abcdeg", "abkdef22", 4),
+        ("123abcdefg", "abfdefg123456", 10),
         ("adsckdsbkclehbkerhbvtrwbvitrwbviwerbvoiwerbvbsa;lkxmc liejnviwtrunbvgieubrvciebvierwubvebrg",
-         "adsckdsbkflehbkerhbvtrwbvitrwbviwerbvoiwerbvbsa;lkxmc liejnviwtrunbvgieubrvciebvierwubvebra", 2)
+         "adsckdsbkflehbkerhbvtrwbvitrwbviwerbvoiwerbvbsa;lkxmc liejnviwtrunbvgieubrvciebvierwubvebra", 2),
+        ("dlfknvldndfjbsbvhbdfjvhbdfjhvbjdfhvbjnkajnexowjqeoijfoeurhgiwuehgbiwvreoiquodiqecgoiqerglkv",
+         "123dlfknvldndejbsbvhbdfjvhbdfjhvbjdfhvbjvkajnexowjqeoijfoeuqhgiwuehgbiwvresiquodiqecgotqergzkvwvh", 12)
     )
 
     test_functions = (
         # ("recursive", levenshtein_recursive),
-        ("iterative", levenshtein_full_matrix),
-        ("ite_numba", levenshtein_full_matrix_numba),
-        ("ite_2_row", levenshtein_two_rows),
-        ("2_row_num", levenshtein_two_rows_numba),
-        ("2_row_dia", levenshtein_two_rows_diag),
-        ("dia_numba", levenshtein_two_rows_diag_numba),
+        ("levenshtein_full_matrix", levenshtein_full_matrix),
+        ("levenshtein_full_matrix_numba", levenshtein_full_matrix_numba),
+        ("levenshtein_two_rows", levenshtein_two_rows),
+        ("levenshtein_two_rows_numba", levenshtein_two_rows_numba),
     )
 
     
-    # print(levenshtein_full_matrix("kitten", "sitting"))
-    # print(levenshtein_two_rows_diag("kitten", "sitting"))
+    # print(levenshtein_full_matrix(test_strings[8][0], test_strings[8][1]))
+    # print(levenshtein_two_rows_diag(test_strings[8][0], test_strings[8][1]))
     # print(levenshtein_two_rows_diag("sitting", "kitten"))
 
-    n = 100
+    n = 1000
     levenshtein_full_matrix_numba("a", "b")
     levenshtein_two_rows_numba("a", "b")
-    levenshtein_two_rows_diag_numba("a", "b")
+    # levenshtein_two_rows_diag_numba("a", "b")
 
     times = []
     for name, function in test_functions:
