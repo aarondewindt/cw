@@ -8,6 +8,10 @@ def levenshtein_recursive(a: Sequence, b: Sequence) -> int:
     """
     Computes the Levenshtein distance between two sequences
     using the recursive algorithm.
+
+    :param a: First sequence.
+    :param b: Second sequence.
+    :returns: The Levenshtein Distance.
     """
     if len(a) == 0:
         return len(b)
@@ -29,6 +33,10 @@ def levenshtein_full_matrix(a: Sequence, b: Sequence) -> int:
     """
     Computes the Levenshtein distance between two sequences
     using the full matrix (aka Wagner-Fischer) algorithm.
+
+    :param a: First sequence.
+    :param b: Second sequence.
+    :returns: The Levenshtein Distance.
     """
 
     m = len(a)
@@ -58,6 +66,10 @@ def levenshtein_full_matrix_numba(a: Sequence, b: Sequence) -> int:
     using the full matrix (aka Wagner-Fischer) algorithm.
 
     Optimized using numba.
+
+    :param a: First sequence.
+    :param b: Second sequence.
+    :returns: The Levenshtein Distance.
     """
     m = len(a)
     n = len(b)
@@ -86,6 +98,10 @@ def levenshtein_two_rows(a: Sequence, b: Sequence) -> int:
     """
     Computes the Levenshtein distance between two sequences
     using the two row matrix algorithm (modified Wagner-Fischer).
+
+    :param a: First sequence.
+    :param b: Second sequence.
+    :returns: The Levenshtein Distance.
     """
     m = len(a)
     n = len(b)
@@ -116,6 +132,10 @@ def levenshtein_two_rows_numba(a: Sequence, b: Sequence) -> int:
     using the two row matrix algorithm (modified Wagner-Fischer).
 
     Optimized using numba.
+
+    :param a: First sequence.
+    :param b: Second sequence.
+    :returns: The Levenshtein Distance.
     """
     m = len(a)
     n = len(b)
