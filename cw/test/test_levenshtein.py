@@ -6,7 +6,7 @@ from cw.levenshtein import levenshtein_recursive, levenshtein_full_matrix, \
 
 
 test_functions = (
-    # ("recursive", levenshtein_recursive),
+    ("recursive", levenshtein_recursive),
     ("levenshtein_full_matrix", levenshtein_full_matrix),
     ("levenshtein_full_matrix_numba", levenshtein_full_matrix_numba),
     ("levenshtein_two_rows", levenshtein_two_rows),
