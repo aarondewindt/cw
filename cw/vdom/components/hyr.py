@@ -1,6 +1,6 @@
 import random
 import string
-from collections import Iterable, Sized, Sequence, Collection
+from collections.abc import Iterable, Sized, Sequence, Collection
 
 from typing import Dict, Any
 import numpy as np

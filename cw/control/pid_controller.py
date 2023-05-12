@@ -1,5 +1,5 @@
 import numpy as np
-from collections import Sequence
+from collections.abc import Sequence
 
 
 # TODO: Write unitttest for control.

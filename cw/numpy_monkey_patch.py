@@ -9,7 +9,7 @@ a = np[[1, 2], [3, 4]]
 """
 
 import numpy as np
-from collections import Sequence
+from collections.abc import Sequence
 from types import ModuleType
 import sys
 

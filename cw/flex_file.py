@@ -4,7 +4,7 @@ Load in object hierarchies from files based on their file extension.
 """
 
 
-from collections import Sequence
+from collections.abc import Sequence
 from pathlib import Path, PurePath
 from typing import Union, Any, Tuple
 import os
